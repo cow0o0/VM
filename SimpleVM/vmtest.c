@@ -108,48 +108,10 @@ int loop2[] = {
         HALT                   // 28
 };
 
-int loop3[] = {
-// .GLOBALS 2; N, I
-// N = 10                      ADDRESS
-        ICONST, 4,            // 0
-        GSTORE, 0,             // 2
-// I = 0
-        ICONST, 0,             // 4
-        GSTORE, 1,             // 6
-// SUM = 0
-        ICONST,0,               //8
-        GSTORE,2,               //10
-// WHILE I<N:
-// START (8):
-        GLOAD, 1,              // 12
-        GLOAD, 0,              // 14
-        ILT,                   // 16
-        BRF, 35,               // 17
-//     I = I + 1
-        GLOAD, 1,              // 19
-        ICONST, 1,             // 21
-        IADD,                  // 23
-        GSTORE, 1,             // 24
-//sum = sum +i
-        GLOAD,2,                //26
-        GLOAD,1,                //28
-        IADD,                   //30
-        GSTORE,2,               //31
-
-        BR, 12,                 // 33
-        GLOAD,2,                //35
-        PRINT,                  //37
-// DONE (24):
-// PRINT "LOOPED "+N+" TIMES."
-        HALT                   // 28
-};
-
 int main(int argc, char *argv[])
 {
     //     vm_exec(hello, sizeof(hello), 0, 0, 1);
-    asm("nop");
-    char * flag = "flag{test}";
-    vm_exec(calc, sizeof(calc), 0, 2, 0);
+    vm_exec(loop2, sizeof(loop2), 0, 2, 0);
     return 0;
 }
 
