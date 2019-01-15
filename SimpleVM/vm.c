@@ -117,7 +117,7 @@ void vm_exec(int *code, int count, int startip, int nglobals, int trace)
                 globals[addr] = stack[sp--];
                 break;
             case PRINT:
-                printf("%d\n", stack[sp--]);
+                printf("%x\n", stack[sp--]);
                 break;
             case POP:
                 --sp;

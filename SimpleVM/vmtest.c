@@ -29,9 +29,12 @@ int loop[] = {
         IADD,                  // 19
         GSTORE, 1,             // 20
         BR, 8,                 // 22
+
+        GLOAD,1,                //24
+        PRINT,                  //26
 // DONE (24):
 // PRINT "LOOPED "+N+" TIMES."
-        HALT                   // 24
+        HALT                   // 27
 };
 
 int calc[] = {
@@ -40,10 +43,10 @@ int calc[] = {
         ICONST,10,            //0
         GSTORE,0,               //2
 // sum = 0
-        ICONST,0x0,            //4
+        ICONST,0,            //4
         GSTORE,1,               //6
 // i = 0
-        ICONST,0x0,             //8
+        ICONST,0,             //8
         GSTORE,2,               //10
 //while i < n
         GLOAD,2,                //14
@@ -62,23 +65,91 @@ int calc[] = {
         GSTORE,2,               //33
         BR,14,                   //35
 
-        GLOAD,1,                //37
+        ICONST,1234,                //37
         PRINT,                  //39
 
         HALT                    //40
 
 };
+
+int loop2[] = {
+// .GLOBALS 2; N, I
+// N = 10                      ADDRESS
+        ICONST, 3,            // 0
+        GSTORE, 0,             // 2
+// I = 0
+        ICONST, 0,             // 4
+        GSTORE, 1,             // 6
+// SUM = 0
+        ICONST,0,               //8
+        GSTORE,2,               //10
+// WHILE I<N:
+// START (8):
+        GLOAD, 1,              // 12
+        GLOAD, 0,              // 14
+        ILT,                   // 16
+        BRF, 35,               // 17
+//     I = I + 1
+        GLOAD, 1,              // 19
+        ICONST, 1,             // 21
+        IADD,                  // 23
+        GSTORE, 1,             // 24
+//sum = sum +i
+        GLOAD,2,                //26
+        GLOAD,1,                //28
+        IADD,                   //30
+        GSTORE,2,               //31
+
+        BR, 12,                 // 33
+        GLOAD,2,                //35
+        PRINT,                  //37
+// DONE (24):
+// PRINT "LOOPED "+N+" TIMES."
+        HALT                   // 28
+};
+
+int loop3[] = {
+// .GLOBALS 2; N, I
+// N = 10                      ADDRESS
+        ICONST, 4,            // 0
+        GSTORE, 0,             // 2
+// I = 0
+        ICONST, 0,             // 4
+        GSTORE, 1,             // 6
+// SUM = 0
+        ICONST,0,               //8
+        GSTORE,2,               //10
+// WHILE I<N:
+// START (8):
+        GLOAD, 1,              // 12
+        GLOAD, 0,              // 14
+        ILT,                   // 16
+        BRF, 35,               // 17
+//     I = I + 1
+        GLOAD, 1,              // 19
+        ICONST, 1,             // 21
+        IADD,                  // 23
+        GSTORE, 1,             // 24
+//sum = sum +i
+        GLOAD,2,                //26
+        GLOAD,1,                //28
+        IADD,                   //30
+        GSTORE,2,               //31
+
+        BR, 12,                 // 33
+        GLOAD,2,                //35
+        PRINT,                  //37
+// DONE (24):
+// PRINT "LOOPED "+N+" TIMES."
+        HALT                   // 28
+};
+
 int main(int argc, char *argv[])
 {
-//     vm_exec(hello, sizeof(hello), 0, 0, 1);
-
-    vm_exec(calc, sizeof(calc), 0, 0, 0);
-
-//     t1 = (clock() / (CLOCKS_PER_SEC / 1000));
-//     vm_exec(loop, sizeof(loop), 0, 2, 1);
-//     t2 = (clock() / (CLOCKS_PER_SEC / 1000));
-//     printf("duration = %d ms\n", (t2 - t1));
-
+    //     vm_exec(hello, sizeof(hello), 0, 0, 1);
+    asm("nop");
+    char * flag = "flag{test}";
+    vm_exec(calc, sizeof(calc), 0, 2, 0);
     return 0;
 }
 

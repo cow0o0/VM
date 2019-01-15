@@ -23,7 +23,7 @@ typedef enum {
     GSTORE  = 13,  // store in global memory
     PRINT   = 14,  // print stack top
     POP     = 15,  // throw away top of stack
-    HALT    = 16
+    HALT    = 16    //over
 } VM_CODE;
 
 void vm_exec(int *code, int count, int startip, int nglobals, int trace);
