@@ -6,8 +6,8 @@ msg:
 
 .section .text
 
-#.global main
-#main:
+#.global _start
+#_start:
 
 .global _start
 
