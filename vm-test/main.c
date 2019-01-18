@@ -3,15 +3,11 @@
 #include<stdlib.h>
 
 
-#define vPushData    0x10
-#define vCall        0x12
-#define vEnd        0xff
-char *str = "Hello World";
+char cmpstr[] = {0x12,0x34,0x56,0x78};
+int main(int argc,char ** argv){
 
-uint8_t bVmData[] = {    vPushData,    0x00, 0x00, 0x00,0x00, 
-                    vPushData,    0x00, 0x00, 0x00,0x00,
-                    vPushData,    0x00, 0x00, 0x00, 0x00,
-                    vPushData,    0x00, 0x00, 0x00,0x00,
-                    vCall,    0x00, 0x00, 0x00, 0x00,
-                    vEnd};
+
+    printf("hello\n");
+    return 0;
+}
     
