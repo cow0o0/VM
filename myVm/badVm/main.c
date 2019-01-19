@@ -40,7 +40,6 @@ typedef struct vm_cpus{
 char * vm_stack;
 
 uint8_t vm_code[]={
-    0xf5,
     0xf1,0xe1,0x00,0x00,0x00,0x00,
     0xf2,
     0xf1,0xe4,0x20,0x00,0x00,0x00,
@@ -56,7 +55,7 @@ uint8_t vm_code[]={
     0xf4
 };
 // calc instruct
-void xor(vm_cpu *cpu);      //xor flag , 0x1-0x9
+void xor(vm_cpu *cpu);      //xor flag , 0x1-0x9 len edi esi
 
 void mov(vm_cpu *cpu);      //change flag position
 
@@ -166,7 +165,11 @@ int main(int argc, char ** argv){
     puts("power by badrer");
     puts("---------------------");
     puts("please input the flag:");
+    setbuf(stdin,0);
+    setbuf(stdout,0);
+    setbuf(stderr,0);
 
+    read(0,vm_stack,4);
     vm_init(&cpu);
     vm_start(&cpu);
 
