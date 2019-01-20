@@ -5,20 +5,26 @@
 #include<string.h>
 #include<unistd.h>
 
-#define OPCODE_N 7
+#define OPCODE_N 2
 
 enum regs{
-    R1 = 0xe1,
-    R2 = 0xe2,
-    R3 = 0xe3,
+    EAX = 0xa1,
+    EBX = 0xa2,
+    ECX = 0xa3,
+    EDX = 0xa4,
+    ESI = 0xa5,
+    EDI = 0xa6,
+    EBP = 0xa7,
+    ESP = 0xa8,
+    EFL = 0xa9,
 };
 
 enum opcodes{
 
-    MOV = 0xf1,
-    XOR = 0xf2,
-    RET = 0xf4,
-    READ = 0xf5,
+    vXor = 0xe1,
+    vAdd = 0xe2,
+
+    vRET = 0xff,
 };
 
 
@@ -30,105 +36,80 @@ typedef struct
 }vm_opcode;
 
 typedef struct vm_cpus{
-    uint32_t r1;
-    uint32_t r2;
-    uint32_t r3;
-    uint8_t *eip;
+                   //         offset
+    uint32_t v_eax;//           0
+    uint32_t v_ebx;//           4
+    uint32_t v_ecx;//           8
+    uint32_t v_edx;//           12
+
+    uint32_t v_esi;//           16
+    uint32_t v_edi;//           20
+
+    uint32_t v_ebp;//           24
+    uint32_t v_esp;//           28
+
+    uint32_t v_efl;//EFLAGs     32
+
+    uint8_t *v_eip;//           36
+
     vm_opcode op_list[OPCODE_N]; //opcode list, store opcode and handle
 }vm_cpu;
 
 char * vm_stack;
 
 uint8_t vm_code[]={
-    0xf1,0xe1,0x00,0x00,0x00,0x00,
-    0xf2,
-    0xf1,0xe4,0x20,0x00,0x00,0x00,
-    0xf1,0xe1,0x01,0x00,0x00,0x00,
-    0xf2,
-    0xf1,0xe4,0x21,0x00,0x00,0x00,
-    0xf1,0xe1,0x02,0x00,0x00,0x00,
-    0xf2,
-    0xf1,0xe4,0x22,0x00,0x00,0x00,
-    0xf1,0xe1,0x03,0x00,0x00,0x00,
-    0xf2,
-    0xf1,0xe4,0x23,0x00,0x00,0x00,
-    0xf4
+    
 };
 // calc instruct
-void xor(vm_cpu *cpu);      //xor flag , 0x1-0x9 len edi esi
-
-void mov(vm_cpu *cpu);      //change flag position
-
-void read_(vm_cpu *cpu);    //call read ,read the flag
+void vXor(vm_cpu *cpu);      //xor edi esi 
+void vAdd(vm_cpu *cpu);      //add edi esi
 
 
-void xor(vm_cpu *cpu)
-{  
-    int temp;
-    temp = cpu->r1 ^ cpu->r2;
-    temp ^= 0x1;
-    cpu->r1 = temp;
-    cpu->eip +=1;                //xor指令占一个字节             
+//
+void vPushReg32(vm_cpu *cpu);
+void vPushImm32(vm_cpu *cpu);
+
+
+void vXor(vm_cpu *cpu){
+    // //0xe1,0xa6,0xa5
+    // uint8_t reg0 = (uint8_t)cpu->v_eip+1;//read reg flag
+    // uint8_t reg1 = (uint8_t)cpu->v_eip+2;//read reg flag
+
+    // switch(regs){
+    //     case 
+    // }
+
 }
 
-void read_(vm_cpu *cpu)
-{
-
-    char *dest = vm_stack;
-    read(0,dest,4);           //用于往虚拟机的栈上读入数据
-    cpu->eip += 1;            //read_指令占一个字节  
+void vPushReg32(vm_cpu *cpu){
+//op reg  vPushReg32 eax
+    uint8_t reg_offset = (uint8_t)cpu->v_eip+1;//reg offset
+    uint32_t reg = (uint32_t)cpu+reg_offset;
+    uint32_t stack_offset = cpu->v_esp;
+    *(vm_stack+stack_offset) = reg;
 }
-
-void mov(vm_cpu *cpu)
-{
-    //mov指令的参数都隐藏在字节码中，指令表示后的一个字节是寄存器标识，第二到第五是要mov的数据在vm_stack上的偏移
-    //我这里只是实现了从vm_stack上取数据和存数据到vm_stack上
-    uint8_t *res = cpu->eip + 1;  //寄存器标识
-    uint32_t *offset = (uint32_t *) (cpu->eip + 2);    //数据在vm_stack上的偏移
-    char *dest = 0;
-    dest = vm_stack;
-
-   
-    switch (*res) {
-        case 0xe1:
-            cpu->r1 = *(dest + *offset);
-            break;    
-
-        case 0xe2:
-            cpu->r2 = *(dest + *offset);
-            break;    
-
-        case 0xe3:
-            cpu->r3 = *(dest + *offset);
-            break;    
-        case 0xe4:
-        {
-        	int x = cpu->r1;
-            *(dest + *offset) = x;
-            break;
-            
-        }
-    }    
-
-    cpu->eip += 6;
-    //mov指令占六个字节，所以eip要向后移6位
-}    
-
 void vm_init(vm_cpu *cpu)	
 {
-    cpu->r1 = 0;
-    cpu->r2 = 0;
-    cpu->r3 = 0;
-    cpu->eip = (uint8_t *)vm_code;
+    cpu->v_eax = 0;
+    cpu->v_ebx = 0;
+    cpu->v_ecx = 0;
+    cpu->v_edx = 0;
 
-    cpu->op_list[0].opcode = 0xf1;
-    cpu->op_list[0].handle = (void (*)(void *))mov;
+    cpu->v_esi = 0;
+    cpu->v_edi = 0;
 
-    cpu->op_list[1].opcode = 0xf2;
-    cpu->op_list[1].handle = (void (*)(void *))xor;
+    cpu->v_ebp = 0;
+    cpu->v_esp = 0;
+    cpu->v_efl = 0;
 
-    cpu->op_list[2].opcode = 0xf5;
-    cpu->op_list[2].handle = (void (*)(void *))read_;
+    cpu->v_eip = (uint8_t *)vm_code;
+
+    cpu->op_list[0].opcode = 0xe1;
+    cpu->op_list[0].handle = (void (*)(void *))vXor;
+
+    cpu->op_list[1].opcode = 0xe2;
+    cpu->op_list[1].handle = (void (*)(void *))vAdd;
+
 
     vm_stack = malloc(0x512);
     memset(vm_stack,0,0x512);
@@ -139,7 +120,7 @@ void vm_dispatcher(vm_cpu *cpu)
     uint8_t i;
     for(i=0 ; i < OPCODE_N ; i++) 
     {
-        if(*cpu->eip == cpu->op_list[i].opcode)	
+        if(*cpu->v_eip == cpu->op_list[i].opcode)	
         {
             cpu->op_list[i].handle(cpu);//(void (*)(void *))
             break;
@@ -151,8 +132,8 @@ void vm_dispatcher(vm_cpu *cpu)
 void vm_start(vm_cpu *cpu)
 {
 
-    cpu->eip = (uint8_t*)vm_code;
-    while((*cpu->eip)!= RET)
+    cpu->v_eip = (uint8_t*)vm_code;
+    while((*cpu->v_eip)!= vRET)
     {
         vm_dispatcher(cpu);
     }
