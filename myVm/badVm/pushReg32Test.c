@@ -5,427 +5,68 @@
 #include<string.h>
 #include<unistd.h>
 
-#define OPCODE_N 6
-
-// enum regs{
-//     EAX = 0xa1,
-//     EBX = 0xa2,
-//     ECX = 0xa3,
-//     EDX = 0xa4,
-//     ESI = 0xa5,
-//     EDI = 0xa6,
-//     EBP = 0xa7,
-//     ESP = 0xa8,
-//     EFL = 0xa9,
-// };
-
-enum opcodes{
-
-    PushReg32 = 0xe1,
-    MovImm2Reg = 0xe2,
-    PushImm32 = 0xe3,
-    PushMem32 = 0xe4,
-    PopReg32 = 0xe5,
+#include"vmopcode.h"
 
 
-    Nop = 0x66,
-    RET = 0xff,
+uint8_t vm_codeTest[]={
+    MovImm2Reg,0x11,0x11,0x11,0x11,EBX,//MovImm2Reg 0x11111111 ebx
+    PushReg32,ECX,                    //PushReg32    ecx
+    PushImm32,0x22,0x22,0x22,0x22,   //PushImm32 0x22222222
+    PopReg32,EDX,                  //PopReg32 edx
+    PushMem32,0x00,                  //PushMem32 0ffset[0x0]
+    Nop,                       //vNop
+    PopReg32,ESI,                  //PopReg32 esi
+    MovImm2Reg,0x11,0x11,0x11,0x11,EAX,//MovImm2Reg 0x11111111 eax
+    Sal,0x10,                  // sal
+    RET                            //RET
 };
 
+uint8_t vm_code[] = {
+    MovMem2Reg,0x0,EAX,
+    MovReg2Reg,EAX,EBX,
+    Sal,0x18,
+    Sar,0x18,
+    PushReg32,EAX,
+    MovReg2Reg,EBX,EAX,
+    Sal,0x10,
+    Sar,0x18,
+    PushReg32,EAX,
+    MovReg2Reg,EBX,EAX,
+    Sal,0x8,
+    Sar,0x18,
+    PushReg32,EAX,
+    MovReg2Reg,EBX,EAX,
+    Sar,0x18,
+    PushReg32,EAX,
+    
+    MovImm2Reg,0x4,0x0,0x0,0x0,ECX,
+    MovImm2Reg,0x0,0x0,0x0,0x0,EBX,
+    XorReg2Reg,EDX,EDX,
 
-typedef struct
-{
-	uint8_t opcode;
-	void (*handle)(void *);
+    Jmp,77,
+    MovReg2Reg,EBX,EDI,
+    AddImm2Reg,0x30,0x0,0x0,0x0,EDI,
+    PopReg32,EAX,
+    XorReg2Reg,EDI,EAX,
+    AddReg2Reg,EAX,EDX,
+    AddImm2Reg,0x1,0x0,0x0,0x0,EBX,
+    CmpReg2Reg,EBX,ECX,
+    
+    Jb,54,
+    MovReg2Mem,EDX,1,
 
-}vm_opcode;
+    Nop,
+    RET
 
-typedef struct vm_cpus{
-                   //         offset
-    uint32_t v_eax;//           0   0
-    uint32_t v_ebx;//           4   1
-    uint32_t v_ecx;//           8   2
-    uint32_t v_edx;//           12  3
 
-    uint32_t v_esi;//           16  4
-    uint32_t v_edi;//           20  5
+    // PushMem32,0x1,
 
-    uint32_t v_ebp;//           24  6
-    uint32_t v_esp;//           28  7
+    // Jmp,29,
+    // AddImm2Reg,0x01,0x00,0x00,0x00,EBX,
 
-    uint32_t v_efl;//EFLAGs     32  8
-
-    uint8_t *v_eip;//           36
-
-    vm_opcode op_list[OPCODE_N]; //opcode list, store opcode and handle
-}vm_cpu;
-
-uint32_t * vm_stack;
-uint32_t * vm_MemBase;
-uint8_t vm_code[]={
-    0xe2,0x11,0x11,0x11,0x11,0x01,//MovImm2Reg 0x11111111 ebx
-    0xe1,0x02,                    //PushReg32    ecx
-    0xe3,0x22,0x22,0x22,0x22,   //PushImm32 0x22222222
-    0xe5,0x03,                  //PopReg32 edx
-    0xe4,0x00,                  //PushMem32 0ffset[0x0]
-    0x66,                       //vNop
-    0xe5,0x04,                  //PopReg32 esi
-    0xff                            //RET
+    // CmpReg2Reg,EAX,ECX,
+    // Ja,17,
 };
-
-//AT&T
-
-//push&pop
-void vPushReg32(vm_cpu *cpu);
-void vPushImm32(vm_cpu *cpu);
-void vPushMem32(vm_cpu *cpu);
-void vPopReg32(vm_cpu *cpu);
-void vNop(vm_cpu *cpu);
-
-//mov
-void vMovImm2Reg(vm_cpu *cpu);
-void vMovReg2Reg(vm_cpu *cpu);
-void vMovMem2Reg(vm_cpu *cpu);
-void vMovReg2Mem(vm_cpu *cpu);
-
-//add
-void vAddReg2Reg(vm_cpu *cpu);
-void vAddImm2Reg(vm_cpu *cpu);
-void vAddMem2Reg(vm_cpu *cpu);
-void vAddImm2Mem(vm_cpu *cpu);
-void vAddReg2Mem(vm_cpu *cpu);
-void vAddMem2Mem(vm_cpu *cpu);
-
-//mul
-void vMulReg2Reg(vm_cpu *cpu);
-void vMulImm2Reg(vm_cpu *cpu);
-void vMulMem2Reg(vm_cpu *cpu);
-void vMulImm2Mem(vm_cpu *cpu);
-void vMulReg2Mem(vm_cpu *cpu);
-void vMulMem2Mem(vm_cpu *cpu);
-
-//xor
-void vXorReg2Reg(vm_cpu *cpu);
-void vXorImm2Reg(vm_cpu *cpu);
-void vXorMem2Reg(vm_cpu *cpu);
-void vXorImm2Mem(vm_cpu *cpu);
-void vXorReg2Mem(vm_cpu *cpu);
-void vXorMem2Mem(vm_cpu *cpu);
-
-//cmp
-void vCmpReg2Reg(vm_cpu *cpu);
-
-//jxx
-void vJmp(vm_cpu *cpu);
-void vJa(vm_cpu *cpu);
-void vJae(vm_cpu *cpu);
-void vJb(vm_cpu *cpu);
-void vJbe(vm_cpu *cpu);
-void vJe(vm_cpu *cpu);
-
-void vJz(vm_cpu *cpu);
-void vJo(vm_cpu *cpu);
-
-//
-void vSal(vm_cpu *cpu);
-void vSar(vm_cpu *cpu);
-
-
-void vPushReg32(vm_cpu *cpu){
-//vPushReg32 reg
-    uint8_t* reg_offset = (uint8_t *)(cpu->v_eip+1);//reg offset
-    uint32_t* reg = (uint32_t *)cpu+(*reg_offset);
-    uint32_t stack_offset = cpu->v_esp+1;
-    *(vm_stack+stack_offset) = *reg;
-
-    cpu->v_esp += 1;
-    cpu->v_eip += 2;
-}
-void vPushImm32(vm_cpu *cpu){
-    //vPushImm32 0x11111111
-    uint32_t* imm = (uint32_t*)(cpu->v_eip+1);
-    uint32_t stack_offset = cpu->v_esp+1;
-    *(vm_stack+stack_offset) = *imm;
-    
-    cpu->v_esp += 1;
-    cpu->v_eip += 5;
-}
-void vPushMem32(vm_cpu *cpu){
-    //vPushMem32 mem+offset
-    uint8_t* mem_offset = (uint8_t *)(cpu->v_eip+1);//reg offset
-    uint32_t* mem = (uint32_t *)vm_MemBase+(*mem_offset);
-    uint32_t stack_offset = cpu->v_esp+1;
-    *(vm_stack+stack_offset) = *mem;
-
-    cpu->v_esp += 1;
-    cpu->v_eip += 2;
-}
-void vPopReg32(vm_cpu *cpu){
-    //vPopReg32 reg
-    uint8_t* reg_offset = (uint8_t *)(cpu->v_eip+1);//reg offset
-    uint32_t* reg = (uint32_t *)cpu+(*reg_offset);
-    uint32_t stack_offset = cpu->v_esp;
-    uint32_t* top_stack = (vm_stack+stack_offset);
-    *reg = *top_stack;
-    
-    cpu->v_esp -= 1;
-    cpu->v_eip += 2;
-}
-void vNop(vm_cpu *cpu){
-    //vNop
-    cpu->v_eip += 1;
-}
-
-void vMovImm2Reg(vm_cpu *cpu){
-    //vMovImm2Reg  Imm reg
-    uint32_t* imm = (uint32_t*)(cpu->v_eip+1);
-
-    uint8_t* reg_offset = (uint8_t*)(cpu->v_eip+5);
-    uint32_t * reg = (uint32_t*)cpu+(*reg_offset);
-    *reg = *imm;
-    
-    cpu->v_eip +=6;
-}
-
-void vMovReg2Reg(vm_cpu *cpu){
-//vMovReg2Reg reg1 reg2
-    uint8_t * reg1_offset = (uint8_t*)(cpu->v_eip+1);
-    uint8_t * reg2_offset = (uint8_t*)(cpu->v_eip+2);
-    uint32_t * reg1 = (uint32_t*)cpu+(*reg1_offset);
-    uint32_t * reg2 = (uint32_t*)cpu+(*reg2_offset);
-    *reg2 = *reg1;
-
-    cpu->v_eip += 3;
-}
-
-void vMovMem2Reg(vm_cpu *cpu){
-    //vMovMem2Reg mem reg
-    uint8_t* mem_offset = (uint8_t *)(cpu->v_eip+1);
-    uint32_t* mem = (uint32_t *)vm_MemBase+(*mem_offset);
-    uint8_t * reg_offset = (uint8_t*)(cpu->v_eip+2);
-    uint32_t * reg = (uint32_t*)cpu+(*reg_offset);
-    *reg = *mem;
-
-    cpu->v_eip += 3;
-}
-void vMovReg2Mem(vm_cpu *cpu){
-//vMovReg2Mem reg mem
-    uint8_t * reg_offset = (uint8_t*)(cpu->v_eip+1);
-    uint32_t * reg = (uint32_t*)cpu+(*reg_offset);
-    uint8_t* mem_offset = (uint8_t *)(cpu->v_eip+2);
-    uint32_t* mem = (uint32_t *)vm_MemBase+(*mem_offset);
-    *mem = *reg;
-
-    cpu->v_eip += 3;
-}
-
-void vAddReg2Reg(vm_cpu *cpu){
-    //vAddReg2Reg reg1 reg2
-    uint8_t * reg1_offset = (uint8_t*)(cpu->v_eip+1);
-    uint8_t * reg2_offset = (uint8_t*)(cpu->v_eip+2);
-    uint32_t * reg1 = (uint32_t*)cpu+(*reg1_offset);
-    uint32_t * reg2 = (uint32_t*)cpu+(*reg2_offset);
-    *reg2 += *reg1;
-
-    cpu->v_eip += 3;
-}
-void vAddImm2Reg(vm_cpu *cpu){
-    //vAddImm2Reg imm reg
-    uint32_t* imm = (uint32_t*)(cpu->v_eip+1);
-    uint8_t* reg_offset = (uint8_t*)(cpu->v_eip+5);
-    uint32_t * reg = (uint32_t*)cpu+(*reg_offset);
-    *reg += *imm;
-    
-    cpu->v_eip += 6;
-}
-void vAddMem2Reg(vm_cpu *cpu){
-    //vAddMem2Reg mem reg
-    uint8_t* mem_offset = (uint8_t *)(cpu->v_eip+1);
-    uint32_t* mem = (uint32_t *)vm_MemBase+(*mem_offset);
-    uint8_t * reg_offset = (uint8_t*)(cpu->v_eip+2);
-    uint32_t * reg = (uint32_t*)cpu+(*reg_offset);
-    *reg += *mem;
-
-    cpu->v_eip += 3;
-}
-void vAddImm2Mem(vm_cpu *cpu){
-    //vAddImm2Mem imm mem
-    uint32_t* imm = (uint32_t*)(cpu->v_eip+1);
-    uint8_t* mem_offset = (uint8_t *)(cpu->v_eip+5);
-    uint32_t* mem = (uint32_t *)vm_MemBase+(*mem_offset);
-    *mem += imm;
-
-    cpu->v_eip += 6;
-}
-void vAddReg2Mem(vm_cpu *cpu){
-//vAddReg2Mem reg mem
-    uint8_t * reg_offset = (uint8_t*)(cpu->v_eip+1);
-    uint32_t * reg = (uint32_t*)cpu+(*reg_offset);
-    uint8_t* mem_offset = (uint8_t *)(cpu->v_eip+2);
-    uint32_t* mem = (uint32_t *)vm_MemBase+(*mem_offset);
-    *mem += * reg;
-
-    cpu->v_eip += 3;
-}
-void vAddMem2Mem(vm_cpu *cpu){
-    //vAddMem2Mem mem1 mem2
-    uint8_t* mem1_offset = (uint8_t *)(cpu->v_eip+1);
-    uint32_t* mem1 = (uint32_t *)vm_MemBase+(*mem1_offset);
-    uint8_t* mem2_offset = (uint8_t *)(cpu->v_eip+2);
-    uint32_t* mem2 = (uint32_t *)vm_MemBase+(*mem2_offset);
-    *mem2 += *mem1;
-
-    cpu->v_eip += 3;
-}
-//mul
-void vMulReg2Reg(vm_cpu *cpu){
-//vMulReg2Reg reg reg
-    uint8_t * reg1_offset = (uint8_t*)(cpu->v_eip+1);
-    uint8_t * reg2_offset = (uint8_t*)(cpu->v_eip+2);
-    uint32_t * reg1 = (uint32_t*)cpu+(*reg1_offset);
-    uint32_t * reg2 = (uint32_t*)cpu+(*reg2_offset);
-    *reg2 *= *reg1;
-
-    cpu->v_eip += 3;
-}
-void vMulImm2Reg(vm_cpu *cpu){
-    //vMulImm2Reg imm reg
-    uint32_t* imm = (uint32_t*)(cpu->v_eip+1);
-    uint8_t* reg_offset = (uint8_t*)(cpu->v_eip+5);
-    uint32_t * reg = (uint32_t*)cpu+(*reg_offset);
-    *reg *= *imm;
-    
-    cpu->v_eip += 6;
-}
-void vMulMem2Reg(vm_cpu *cpu){
-    //vMulMem2Reg mem reg
-    uint8_t* mem_offset = (uint8_t *)(cpu->v_eip+1);
-    uint32_t* mem = (uint32_t *)vm_MemBase+(*mem_offset);
-    uint8_t * reg_offset = (uint8_t*)(cpu->v_eip+2);
-    uint32_t * reg = (uint32_t*)cpu+(*reg_offset);
-    *reg *= *mem;
-
-    cpu->v_eip += 3;
-}
-void vMulImm2Mem(vm_cpu *cpu){
-    //vMulImm2Mem imm mem
-    uint32_t* imm = (uint32_t*)(cpu->v_eip+1);
-    uint8_t* mem_offset = (uint8_t *)(cpu->v_eip+5);
-    uint32_t* mem = (uint32_t *)vm_MemBase+(*mem_offset);
-    *mem *= imm;
-
-    cpu->v_eip += 6;
-}
-void vMulReg2Mem(vm_cpu *cpu){
-    //vMulReg2Mem reg mem
-    uint8_t * reg_offset = (uint8_t*)(cpu->v_eip+1);
-    uint32_t * reg = (uint32_t*)cpu+(*reg_offset);
-    uint8_t* mem_offset = (uint8_t *)(cpu->v_eip+2);
-    uint32_t* mem = (uint32_t *)vm_MemBase+(*mem_offset);
-    *mem *= * reg;
-
-    cpu->v_eip += 3;
-}
-void vMulMem2Mem(vm_cpu *cpu){
-    //vMulMem2Mem mem mem
-    uint8_t* mem1_offset = (uint8_t *)(cpu->v_eip+1);
-    uint32_t* mem1 = (uint32_t *)vm_MemBase+(*mem1_offset);
-    uint8_t* mem2_offset = (uint8_t *)(cpu->v_eip+2);
-    uint32_t* mem2 = (uint32_t *)vm_MemBase+(*mem2_offset);
-    *mem2 *= *mem1;
-
-    cpu->v_eip += 3;
-}
-
-//xor
-void vXorReg2Reg(vm_cpu *cpu){
-    //vXorReg2Reg reg reg
-    uint8_t * reg1_offset = (uint8_t*)(cpu->v_eip+1);
-    uint8_t * reg2_offset = (uint8_t*)(cpu->v_eip+2);
-    uint32_t * reg1 = (uint32_t*)cpu+(*reg1_offset);
-    uint32_t * reg2 = (uint32_t*)cpu+(*reg2_offset);
-    *reg2 ^= *reg1;
-
-    cpu->v_eip += 3;
-}
-void vXorImm2Reg(vm_cpu *cpu){
-    //vXorImm2Reg imm reg
-    uint32_t* imm = (uint32_t*)(cpu->v_eip+1);
-    uint8_t* reg_offset = (uint8_t*)(cpu->v_eip+5);
-    uint32_t * reg = (uint32_t*)cpu+(*reg_offset);
-    *reg ^= *imm;
-    
-    cpu->v_eip += 6;
-}
-void vXorMem2Reg(vm_cpu *cpu){
-    //vXorMem2Reg mem reg
-    uint8_t* mem_offset = (uint8_t *)(cpu->v_eip+1);
-    uint32_t* mem = (uint32_t *)vm_MemBase+(*mem_offset);
-    uint8_t * reg_offset = (uint8_t*)(cpu->v_eip+2);
-    uint32_t * reg = (uint32_t*)cpu+(*reg_offset);
-    *reg ^= *mem;
-
-    cpu->v_eip += 3;
-}
-void vXorImm2Mem(vm_cpu *cpu){
-    //vXorImm2Mem imm mem
-    uint32_t* imm = (uint32_t*)(cpu->v_eip+1);
-    uint8_t* mem_offset = (uint8_t *)(cpu->v_eip+5);
-    uint32_t* mem = (uint32_t *)vm_MemBase+(*mem_offset);
-    *mem ^= imm;
-
-    cpu->v_eip += 6;
-}
-void vXorReg2Mem(vm_cpu *cpu){
-    //vXorReg2Mem reg mem
-    uint8_t * reg_offset = (uint8_t*)(cpu->v_eip+1);
-    uint32_t * reg = (uint32_t*)cpu+(*reg_offset);
-    uint8_t* mem_offset = (uint8_t *)(cpu->v_eip+2);
-    uint32_t* mem = (uint32_t *)vm_MemBase+(*mem_offset);
-    *mem ^= * reg;
-
-    cpu->v_eip += 3;
-}
-void vXorMem2Mem(vm_cpu *cpu){
-    //vXorMem2Mem mem mem
-    uint8_t* mem1_offset = (uint8_t *)(cpu->v_eip+1);
-    uint32_t* mem1 = (uint32_t *)vm_MemBase+(*mem1_offset);
-    uint8_t* mem2_offset = (uint8_t *)(cpu->v_eip+2);
-    uint32_t* mem2 = (uint32_t *)vm_MemBase+(*mem2_offset);
-    *mem2 ^= *mem1;
-
-    cpu->v_eip += 3;
-}
-//cmp
-void vCmpReg2Reg(vm_cpu *cpu){
-    //vCmpReg2Reg reg1 reg2
-    uint8_t * reg1_offset = (uint8_t*)(cpu->v_eip+1);
-    uint8_t * reg2_offset = (uint8_t*)(cpu->v_eip+2);
-    uint32_t * reg1 = (uint32_t*)cpu+(*reg1_offset);
-    uint32_t * reg2 = (uint32_t*)cpu+(*reg2_offset);
-    uint32_t result = *reg1 - *reg2;  // 2-3 = -1 = 0xffffffff
-    if(result == 0){
-        //set efl zf = 0
-        cpu->v_efl = 0x0;
-    }
-    if()
-    
-}
-
-//jxx
-void vJmp(vm_cpu *cpu);
-void vJa(vm_cpu *cpu);
-void vJae(vm_cpu *cpu);
-void vJb(vm_cpu *cpu);
-void vJbe(vm_cpu *cpu);
-void vJe(vm_cpu *cpu);
-
-void vJz(vm_cpu *cpu);
-void vJo(vm_cpu *cpu);
-
-//
-void vSal(vm_cpu *cpu);
-void vSar(vm_cpu *cpu);
 
 void vm_init(vm_cpu *cpu)	
 {
@@ -437,7 +78,7 @@ void vm_init(vm_cpu *cpu)
     cpu->v_esi = 0;
     cpu->v_edi = 0;
 
-    cpu->v_ebp = 0;
+    cpu->v_ebp = (uint8_t *)vm_code;
     cpu->v_esp = 0xffffffff;
     cpu->v_efl = 0;
 
@@ -445,23 +86,80 @@ void vm_init(vm_cpu *cpu)
 
     cpu->op_list[0].opcode = 0xe1;
     cpu->op_list[0].handle = (void (*)(void *))vPushReg32;
+    cpu->op_list[1].opcode = 0xe3;
+    cpu->op_list[1].handle = (void (*)(void *))vPushImm32;
+    cpu->op_list[2].opcode = 0xe4;
+    cpu->op_list[2].handle = (void (*)(void *))vPushMem32;
+    cpu->op_list[3].opcode = 0xe5;
+    cpu->op_list[3].handle = (void (*)(void *))vPopReg32;
 
-    cpu->op_list[1].opcode = 0xe2;
-    cpu->op_list[1].handle = (void (*)(void *))vMovImm2Reg;
+    cpu->op_list[4].opcode = 0xa1;
+    cpu->op_list[4].handle = (void (*)(void *))vMovImm2Reg;
+    cpu->op_list[5].opcode = 0xa2;
+    cpu->op_list[5].handle = (void (*)(void *))vMovReg2Reg;
+    cpu->op_list[6].opcode = 0xa3;
+    cpu->op_list[6].handle = (void (*)(void *))vMovMem2Reg;
+    cpu->op_list[7].opcode = 0xa4;
+    cpu->op_list[7].handle = (void (*)(void *))vMovReg2Mem;
 
-    cpu->op_list[2].opcode = 0xe3;
-    cpu->op_list[2].handle = (void (*)(void *))vPushImm32;
+    cpu->op_list[8].opcode = 0xa5;
+    cpu->op_list[8].handle = (void (*)(void *))vAddReg2Reg;
+    cpu->op_list[9].opcode = 0xa6;
+    cpu->op_list[9].handle = (void (*)(void *))vAddImm2Reg;
+    cpu->op_list[10].opcode = 0xa7;
+    cpu->op_list[10].handle = (void (*)(void *))vAddMem2Reg;
+    cpu->op_list[11].opcode = 0xa8;
+    cpu->op_list[11].handle = (void (*)(void *))vAddImm2Mem;
+    cpu->op_list[12].opcode = 0xa9;
+    cpu->op_list[12].handle = (void (*)(void *))vAddReg2Mem;
+    cpu->op_list[13].opcode = 0xa0;
+    cpu->op_list[13].handle = (void (*)(void *))vAddMem2Mem;
 
-    cpu->op_list[3].opcode = 0xe4;
-    cpu->op_list[3].handle = (void (*)(void *))vPushMem32;
+    cpu->op_list[14].opcode = 0xe6;
+    cpu->op_list[14].handle = (void (*)(void *))vMulReg2Reg;
+    cpu->op_list[15].opcode = 0xe7;
+    cpu->op_list[15].handle = (void (*)(void *))vMulImm2Reg;
+    cpu->op_list[16].opcode = 0xe8;
+    cpu->op_list[16].handle = (void (*)(void *))vMulMem2Reg;
+    cpu->op_list[17].opcode = 0xe9;
+    cpu->op_list[17].handle = (void (*)(void *))vMulImm2Mem;
+    cpu->op_list[18].opcode = 0xea;
+    cpu->op_list[18].handle = (void (*)(void *))vMulReg2Mem;
+    cpu->op_list[19].opcode = 0xeb;
+    cpu->op_list[19].handle = (void (*)(void *))vMulMem2Mem;
 
-    cpu->op_list[4].opcode = 0xe5;
-    cpu->op_list[4].handle = (void (*)(void *))vPopReg32;
+    cpu->op_list[20].opcode = 0xc0;
+    cpu->op_list[20].handle = (void (*)(void *))vXorReg2Reg;
+    cpu->op_list[21].opcode = 0xc1;
+    cpu->op_list[21].handle = (void (*)(void *))vXorImm2Reg;
+    cpu->op_list[22].opcode = 0xc2;
+    cpu->op_list[22].handle = (void (*)(void *))vXorMem2Reg;
+    cpu->op_list[23].opcode = 0xc3;
+    cpu->op_list[23].handle = (void (*)(void *))vXorImm2Mem;
+    cpu->op_list[24].opcode = 0xc4;
+    cpu->op_list[24].handle = (void (*)(void *))vXorReg2Mem;
+    cpu->op_list[25].opcode = 0xc5;
+    cpu->op_list[25].handle = (void (*)(void *))vXorMem2Mem;
 
+    cpu->op_list[26].opcode = 0xb0;
+    cpu->op_list[26].handle = (void (*)(void *))vJmp;
+    cpu->op_list[27].opcode = 0xb1;
+    cpu->op_list[27].handle = (void (*)(void *))vJa;
+    cpu->op_list[28].opcode = 0xb2;
+    cpu->op_list[28].handle = (void (*)(void *))vJb;
+    cpu->op_list[29].opcode = 0xb3;
+    cpu->op_list[29].handle = (void (*)(void *))vJe;
+    cpu->op_list[30].opcode = 0xb4;
+    cpu->op_list[30].handle = (void (*)(void *))vJz;
 
-
-    cpu->op_list[5].opcode = 0x66;
-    cpu->op_list[5].handle = (void (*)(void *))vNop;
+    cpu->op_list[31].opcode = 0x99;
+    cpu->op_list[31].handle = (void (*)(void *))vSal;
+    cpu->op_list[32].opcode = 0x88;
+    cpu->op_list[32].handle = (void (*)(void *))vSar;
+    cpu->op_list[33].opcode = 0x77;
+    cpu->op_list[33].handle = (void (*)(void *))vCmpReg2Reg;
+    cpu->op_list[34].opcode = 0x66;
+    cpu->op_list[34].handle = (void (*)(void *))vNop;
 
 
     vm_stack = malloc(0x1024);
@@ -510,6 +208,12 @@ int main(int argc, char ** argv){
     read(0,vm_MemBase,4);
 
     vm_start(&cpu);
+
+    if(*(vm_MemBase+1) == 0x8){
+        printf("You Win!\n");
+    }else{
+        printf("You Lost!\n");
+    }
 
     exit(0);
 
