@@ -11,17 +11,17 @@ vm -- code interpreter
 2. babyVm
 3. badVm
 
-## miniVm
+## 0x0miniVm
 
 代码来自于一道简单的`VM`逆向题
 
-## babyVm
+## 0x1babyVm
 
 来自于这位师傅 https://xz.aliyun.com/t/3851 
 
 提供了很好的框架
 
-## badVm
+## 0x2badVm
 
 主体框架结构参考自 https://xz.aliyun.com/t/3851 
 
