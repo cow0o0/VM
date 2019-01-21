@@ -1,7 +1,7 @@
 CC := cc
 CFLAGS := -g -w
 OUT := test
-SRC := vmopcode.o pushReg32Test.o
+SRC := vmopcode.o main.o
 
 all:build
 
