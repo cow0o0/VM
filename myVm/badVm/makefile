@@ -1,6 +1,6 @@
 CC := cc
 CFLAGS := -g -w
-OUT := test
+OUT := badVm
 SRC := vmopcode.o main.o
 
 all:build
