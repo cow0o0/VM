@@ -1,4 +1,4 @@
-CC := cc
+CC := mips64el-linux-gnuabi64-gcc
 CFLAGS := -g -w
 OUT := badVm-2.0
 SRC := vmopcode.o main.o
