@@ -21,44 +21,6 @@ uint8_t vm_codeTest[]={
     RET                            //RET
 };
 
-uint8_t vm_code[] = {
-    MovMem2Reg,0x0,EAX,
-    MovReg2Reg,EAX,EBX,
-    Sal,0x18,
-    Sar,0x18,
-    PushReg32,EAX,
-    MovReg2Reg,EBX,EAX,
-    Sal,0x10,
-    Sar,0x18,
-    PushReg32,EAX,
-    MovReg2Reg,EBX,EAX,
-    Sal,0x8,
-    Sar,0x18,
-    PushReg32,EAX,
-    MovReg2Reg,EBX,EAX,
-    Sar,0x18,
-    PushReg32,EAX,
-    
-    MovImm2Reg,0x4,0x0,0x0,0x0,ECX,
-    MovImm2Reg,0x0,0x0,0x0,0x0,EBX,
-    XorReg2Reg,EDX,EDX,
-
-    Jmp,77,
-    MovReg2Reg,EBX,EDI,
-    AddImm2Reg,0x30,0x0,0x0,0x0,EDI,
-    PopReg32,EAX,
-    XorReg2Reg,EDI,EAX,
-    AddReg2Reg,EAX,EDX,
-    AddImm2Reg,0x1,0x0,0x0,0x0,EBX,
-    CmpReg2Reg,EBX,ECX,
-    
-    Jb,54,
-    MovReg2Mem,EDX,1,
-
-    Nop,
-    RET
-
-};
 
 void vm_init(vm_cpu *cpu)	
 {
@@ -70,11 +32,11 @@ void vm_init(vm_cpu *cpu)
     cpu->v_esi = 0;
     cpu->v_edi = 0;
 
-    cpu->v_ebp = (uint8_t *)vm_code;
+    cpu->v_ebp = (uint8_t *)vm_codeTest;
     cpu->v_esp = 0xffffffff;
     cpu->v_efl = 0;
 
-    cpu->v_eip = (uint8_t *)vm_code;
+    cpu->v_eip = (uint8_t *)vm_codeTest;
 
     cpu->op_list[0].opcode = 0xe1;
     cpu->op_list[0].handle = (void (*)(void *))vPushReg32;
@@ -177,7 +139,7 @@ void vm_dispatcher(vm_cpu *cpu)
 void vm_start(vm_cpu *cpu)
 {
 
-    cpu->v_eip = (uint8_t*)vm_code;
+    cpu->v_eip = (uint8_t*)vm_codeTest;
     while((*cpu->v_eip)!= RET)
     {
         vm_dispatcher(cpu);

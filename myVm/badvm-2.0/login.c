@@ -20,42 +20,42 @@ void setBufferedInput(bool enable){
     if(enable && !enabled){
         //restore the terminal
         tcsetattr(STDIN_FILENO,TCSANOW,&old);
-
         enabled = true;
-
     }else if(!enable && enabled){
         //get terminal attr
         if(tcgetattr(STDIN_FILENO,&new)==-1){
-            printf("tcgetattr Error!\n");
+            //printf("tcgetattr Error!\n");
             exit(-1);
         }
         //resotre now terminal attr
         old = new;
         //set c_cflag don't show cursor(光标)  attaction to order
         new.c_lflag &=(~ICANON & ~ECHO);
-
         tcsetattr(STDIN_FILENO,TCSANOW,&new);
-
         enabled = false;
     }
-
 }
 
 int main(void){
+    
     printf("Powered by badrer!\n");
-    //printf("Please Login.\n");
     printf("---------[LOGIN]---------\n");
     printf("Username:");
+    fflush(stdout);
     char username[7]; 
     char passwd[7];
     scanf("%s",username);
+    fflush(stdin);
     printf("Password:");
+    fflush(stdout);
     HIDE_CURSOR();
     setBufferedInput(false);
     scanf("%s",passwd);
+    fflush(stdin);
     setBufferedInput(true);
     uint8_t v0 = strncmp(username,"badrer",6);
     uint8_t v1 = strncmp(passwd,"123456",6);
+    SHOW_CURSOR();
     if(v0 == 0 && v1 == 0){
         printf("\n---------[WELCOME]---------\n");
         system("/bin/sh");
