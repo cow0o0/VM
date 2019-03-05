@@ -53,8 +53,16 @@ int main(void){
     scanf("%s",passwd);
     fflush(stdin);
     setBufferedInput(true);
+
     uint8_t v0 = strncmp(username,"badrer",6);
-    uint8_t v1 = strncmp(passwd,"123456",6);
+    uint8_t v1 = 0;
+    uint8_t i = 0;
+    for(i=0;i<6;i++){
+        v1 = passwd[i]^(49+i);
+    }
+    //uint8_t v1 = strncmp(passwd,"123456",6);
+
+
     SHOW_CURSOR();
     if(v0 == 0 && v1 == 0){
         printf("\n---------[WELCOME]---------\n");
