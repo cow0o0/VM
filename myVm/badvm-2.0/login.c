@@ -35,17 +35,26 @@ void setBufferedInput(bool enable){
         enabled = false;
     }
 }
-
+void printfBadVm(void){
+    printf("___.               ._______   ____      \n");
+    printf("\\_ |__ _____     __| _\/\\   \\ \/   \/____  \n");
+    printf(" | __ \\\\__  \\   \/ __ |  \\   Y   \/     \\ \n");
+    printf(" | \\_\\ \\\/ __ \\_\/ \/_\/ |   \\     \/  Y Y  \\\n");
+    printf(" |___  (____  \/\\____ |    \\___\/|__|_|  \/\n");
+    printf("     \\\/     \\\/      \\\/               \\\/ 2.0 \n");
+}
 int main(void){
     
+    setbuf(stdin,0);
+    setbuf(stdout,0);
+    setbuf(stderr,0);
     printf("Powered by badrer!\n");
+    printfBadVm();
     printf("---------[LOGIN]---------\n");
     printf("Username:");
-    fflush(stdout);
     char username[7]; 
     char passwd[7];
     scanf("%s",username);
-    fflush(stdin);
     printf("Password:");
     fflush(stdout);
     HIDE_CURSOR();
