@@ -58,7 +58,7 @@ int main(void){
     uint8_t v1 = 0;
     uint8_t i = 0;
     for(i=0;i<6;i++){
-        v1 = passwd[i]^(49+i);
+        v1 += passwd[i]^(49+i);
     }
     //uint8_t v1 = strncmp(passwd,"123456",6);
 
