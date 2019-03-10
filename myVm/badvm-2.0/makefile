@@ -3,7 +3,7 @@ CC := gcc
 CFLAGS := -g -w 
 #-fno-stack-protector
 OUT := badVm-2.0
-SRC := vmopcode.o main.o
+SRC := vmopcode.o vmhandler.o main.o
 
 all:build
 

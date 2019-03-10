@@ -2,7 +2,7 @@
 #define __H__VMOPCODE
 
 #include<stdint.h>
-#define OPCODE_N 67
+#define OPCODE_N 82
 #define CHUNK_SIZE 0x1000
 
 enum regs {
@@ -103,6 +103,24 @@ enum opcodes{
 
     Jmp = 0x90,
     Nop = 0x91,
+
+    PushImm = 0xb0,
+    PushMem = 0xb1,
+    PushReg = 0xb2,
+    PopImm  = 0xb3,
+    PopMem  = 0xb4,
+    PopReg  = 0xb5,
+
+    AtomAdd = 0xc0,
+    AtomSub = 0xc1,
+    AtomAnd = 0xc2,
+    AtomXor = 0xc3,
+    AtomOr  = 0xc4,
+    AtomNor = 0xc5,
+    AtomMul = 0xc6,
+    AtomSll = 0xc7,
+    AtomSra = 0xc8,
+
     Ret = 0xFF,
 
 };
@@ -218,6 +236,25 @@ void vNorReg4Mem2Reg(vm_cpu * cpu);
 void vNorReg4Imm2Mem(vm_cpu * cpu);
 void vNorReg4Reg2Mem(vm_cpu * cpu);
 
+void vPushImm(vm_cpu * cpu);
+void vPushMem(vm_cpu * cpu);
+void vPushReg(vm_cpu * cpu);
+void vPopImm(vm_cpu * cpu);
+void vPopMem(vm_cpu * cpu);
+void vPopReg(vm_cpu * cpu);
+
+//atom operator
+void vAtomAdd(vm_cpu * cpu);
+void vAtomSub(vm_cpu * cpu);
+void vAtomAnd(vm_cpu * cpu);
+void vAtomXor(vm_cpu * cpu);
+void vAtomOr(vm_cpu * cpu);
+void vAtomNor(vm_cpu * cpu);
+void vAtomMul(vm_cpu * cpu);
+void vAtomSll(vm_cpu * cpu);
+void vAtomSra(vm_cpu * cpu);
+
+//set if else
 void vSetLessThanImm(vm_cpu * cpu);
 void vSetLessThanReg(vm_cpu * cpu);
 void vBranchNotEquelZero(vm_cpu * cpu);

@@ -1,6 +1,7 @@
 #include<stdint.h>
 #include "vmopcode.h"
 
+
 void vMovImm2Reg(vm_cpu * cpu){
     //reg1 = imm
     uint32_t * imm = (uint32_t *)(cpu->v_eip+1);
@@ -1059,6 +1060,153 @@ void vJmp(vm_cpu * cpu){
     ;
 }
 void vNop(vm_cpu * cpu){
+    cpu->v_eip += 1;
+    ;
+}
+//append
+
+void vPushImm(vm_cpu * cpu){
+    uint32_t * imm = (uint32_t*)(cpu->v_eip+1);
+    *vm_stack = *imm;
+    vm_stack += 1;
+
+    cpu->v_eip += 2;
+    ;
+}
+void vPushMem(vm_cpu * cpu){
+    uint32_t mem_offset = (cpu->v_rfpo);
+    uint32_t * mem_reg_base = (uint32_t*)(cpu->v_eip+1);
+    uint32_t * mem_base = (uint32_t*)cpu+(*mem_reg_base);
+    uint32_t * mem ;
+    if(mem_offset > CHUNK_SIZE){
+        //-
+        uint32_t t = 0-mem_offset;
+        mem = (uint32_t *)(*mem_base - 4*t);
+    }else{
+        //+
+        mem = (uint32_t *)(*mem_base + 4*mem_offset);
+    }
+    *vm_stack = *mem;
+    vm_stack += 1;
+
+    cpu->v_eip += 2;
+    ;
+}
+void vPushReg(vm_cpu * cpu){
+    uint32_t * reg1_offset = (uint32_t*)(cpu->v_eip+1);
+    uint32_t * reg1 = (uint32_t*)cpu+(*reg1_offset);
+    *vm_stack = *reg1;
+    vm_stack += 1;
+
+    cpu->v_eip += 2;
+    ;
+}
+void vPopImm(vm_cpu * cpu){
+    uint32_t * imm = (uint32_t*)(cpu->v_eip+1);
+    vm_stack -= 1;
+    *imm = *vm_stack;
+
+    cpu->v_eip += 2;
+    ;
+}
+void vPopMem(vm_cpu * cpu){
+    uint32_t mem_offset = (cpu->v_rfpo);
+    uint32_t * mem_reg_base = (uint32_t*)(cpu->v_eip+1);
+    uint32_t * mem_base = (uint32_t*)cpu+(*mem_reg_base);
+    uint32_t * mem ;
+    if(mem_offset > CHUNK_SIZE){
+        //-
+        uint32_t t = 0-mem_offset;
+        mem = (uint32_t *)(*mem_base - 4*t);
+    }else{
+        //+
+        mem = (uint32_t *)(*mem_base + 4*mem_offset);
+    }
+    vm_stack -= 1;
+    *mem = *vm_stack;
+
+    cpu->v_eip += 2;
+    ;
+}
+void vPopReg(vm_cpu * cpu){
+    uint32_t * reg1_offset = (uint32_t*)(cpu->v_eip+1);
+    uint32_t * reg1 = (uint32_t*)cpu+(*reg1_offset);
+    vm_stack -= 1;
+    *reg1 = *vm_stack;
+
+    cpu->v_eip += 2;
+    ;
+}
+
+void vAtomAdd(vm_cpu * cpu){
+    uint32_t data1 = *(vm_stack - 2);//src
+    uint32_t data2 = *(vm_stack - 1);//des
+    *(vm_stack-1) = data1 + data2;
+
+    cpu->v_eip += 1;
+    ;
+}
+void vAtomSub(vm_cpu * cpu){
+    uint32_t data1 = *(vm_stack - 2);//src
+    uint32_t data2 = *(vm_stack - 1);//des
+    *(vm_stack-1) = data1 - data2;
+
+    cpu->v_eip += 1;
+    ;
+}
+void vAtomAnd(vm_cpu * cpu){
+    uint32_t data1 = *(vm_stack - 2);//src
+    uint32_t data2 = *(vm_stack - 1);//des
+    *(vm_stack-1) = data1 & data2;
+
+    cpu->v_eip += 1;
+    ;
+}
+void vAtomXor(vm_cpu * cpu){
+    uint32_t data1 = *(vm_stack - 2);//src
+    uint32_t data2 = *(vm_stack - 1);//des
+    *(vm_stack-1) = data1 ^ data2;
+
+    cpu->v_eip += 1;
+    ;
+}
+void vAtomOr(vm_cpu * cpu){
+    uint32_t data1 = *(vm_stack - 2);//src
+    uint32_t data2 = *(vm_stack - 1);//des
+    *(vm_stack-1) = data1 | data2;
+
+    cpu->v_eip += 1;
+    ;
+}
+void vAtomNor(vm_cpu * cpu){
+    uint32_t data1 = *(vm_stack - 2);//src
+    uint32_t data2 = *(vm_stack - 1);//des
+    *(vm_stack-1) = ~(data1 | data2);
+
+    cpu->v_eip += 1;
+    ;
+}
+void vAtomMul(vm_cpu * cpu){
+    uint32_t data1 = *(vm_stack - 2);//src
+    uint32_t data2 = *(vm_stack - 1);//des
+    *(vm_stack-1) = data1 * data2;
+
+    cpu->v_eip += 1;
+    ;
+}
+void vAtomSll(vm_cpu * cpu){
+    uint32_t data1 = *(vm_stack - 2);//src
+    uint32_t data2 = *(vm_stack - 1);//des
+    *(vm_stack-1) = data1 << data2;
+
+    cpu->v_eip += 1;
+    ;
+}
+void vAtomSra(vm_cpu * cpu){
+    uint32_t data1 = *(vm_stack - 2);//src
+    uint32_t data2 = *(vm_stack - 1);//des
+    *(vm_stack-1) = data1 >> data2;
+
     cpu->v_eip += 1;
     ;
 }
