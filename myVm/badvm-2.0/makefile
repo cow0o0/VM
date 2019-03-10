@@ -1,5 +1,7 @@
-CC := mipsel-linux-gnu-gcc
-CFLAGS := -g -w
+#CC := mipsel-linux-gnu-gcc
+CC := gcc
+CFLAGS := -g -w 
+#-fno-stack-protector
 OUT := badVm-2.0
 SRC := vmopcode.o main.o
 

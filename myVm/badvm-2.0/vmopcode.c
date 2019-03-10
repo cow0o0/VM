@@ -1,343 +1,1064 @@
 #include<stdint.h>
 #include "vmopcode.h"
 
-void vPushReg32(vm_cpu *cpu){
-//vPushReg32 reg
-    uint8_t* reg_offset = (uint8_t *)(cpu->v_eip+1);//reg offset
-    uint32_t* reg = (uint32_t *)cpu+(*reg_offset);
-    uint32_t stack_offset = cpu->v_esp+1;
-    *(vm_stack+stack_offset) = *reg;
-
-    cpu->v_esp += 1;
-    cpu->v_eip += 2;
-}
-void vPushImm32(vm_cpu *cpu){
-    //vPushImm32 0x11111111
-    uint32_t* imm = (uint32_t*)(cpu->v_eip+1);
-    uint32_t stack_offset = cpu->v_esp+1;
-    *(vm_stack+stack_offset) = *imm;
-    
-    cpu->v_esp += 1;
-    cpu->v_eip += 5;
-}
-void vPushMem32(vm_cpu *cpu){
-    //vPushMem32 mem+offset
-    uint8_t* mem_offset = (uint8_t *)(cpu->v_eip+1);//reg offset
-    uint32_t* mem = (uint32_t *)vm_MemBase+(*mem_offset);
-    uint32_t stack_offset = cpu->v_esp+1;
-    *(vm_stack+stack_offset) = *mem;
-
-    cpu->v_esp += 1;
-    cpu->v_eip += 2;
-}
-void vPopReg32(vm_cpu *cpu){
-    //vPopReg32 reg
-    uint8_t* reg_offset = (uint8_t *)(cpu->v_eip+1);//reg offset
-    uint32_t* reg = (uint32_t *)cpu+(*reg_offset);
-    uint32_t stack_offset = cpu->v_esp;
-    uint32_t* top_stack = (vm_stack+stack_offset);
-    *reg = *top_stack;
-    
-    cpu->v_esp -= 1;
-    cpu->v_eip += 2;
-}
-void vNop(vm_cpu *cpu){
-    //vNop
-    cpu->v_eip += 1;
-}
-
-void vMovImm2Reg(vm_cpu *cpu){
-    //vMovImm2Reg  Imm reg
-    uint32_t* imm = (uint32_t*)(cpu->v_eip+1);
-
-    uint8_t* reg_offset = (uint8_t*)(cpu->v_eip+5);
-    uint32_t * reg = (uint32_t*)cpu+(*reg_offset);
+void vMovImm2Reg(vm_cpu * cpu){
+    //reg1 = imm
+    uint32_t * imm = (uint32_t *)(cpu->v_eip+1);
+    uint32_t * reg_offset = (uint32_t *)(cpu->v_eip+2);
+    uint32_t * reg = (uint32_t *)cpu+(*reg_offset);
     *reg = *imm;
     
-    cpu->v_eip +=6;
+    cpu->v_eip +=3;
+    ;
 }
-
-void vMovReg2Reg(vm_cpu *cpu){
-//vMovReg2Reg reg1 reg2
-    uint8_t * reg1_offset = (uint8_t*)(cpu->v_eip+1);
-    uint8_t * reg2_offset = (uint8_t*)(cpu->v_eip+2);
-    uint32_t * reg1 = (uint32_t*)cpu+(*reg1_offset);
-    uint32_t * reg2 = (uint32_t*)cpu+(*reg2_offset);
-    *reg2 = *reg1;
-
-    cpu->v_eip += 3;
-}
-
-void vMovMem2Reg(vm_cpu *cpu){
-    //vMovMem2Reg mem reg
-    uint8_t* mem_offset = (uint8_t *)(cpu->v_eip+1);
-    uint32_t* mem = (uint32_t *)vm_MemBase+(*mem_offset);
-    uint8_t * reg_offset = (uint8_t*)(cpu->v_eip+2);
-    uint32_t * reg = (uint32_t*)cpu+(*reg_offset);
+void vMovMem2Reg(vm_cpu * cpu){
+    //reg1 = mem
+    uint32_t * mem_reg_base = (uint32_t *)(cpu->v_eip+1);
+    uint32_t mem_offset = (cpu->v_rfpo);
+    uint32_t * mem_base = (uint32_t*)cpu+(*mem_reg_base);
+    uint32_t * mem ;
+    uint32_t * reg_offset = (uint32_t *)(cpu->v_eip+2);
+    uint32_t * reg = (uint32_t *)cpu+(*reg_offset);
+    if(mem_offset > CHUNK_SIZE){
+        //-
+        uint32_t t = 0-mem_offset;
+        mem = (uint32_t *)(*mem_base - 4*t);
+    }else{
+        //+
+        mem = (uint32_t *)(*mem_base + 4*mem_offset);
+    }
     *reg = *mem;
-
-    cpu->v_eip += 3;
+    
+    cpu->v_eip +=3;
+    ;
 }
-void vMovReg2Mem(vm_cpu *cpu){
-//vMovReg2Mem reg mem
-    uint8_t * reg_offset = (uint8_t*)(cpu->v_eip+1);
+void vMovReg2Reg(vm_cpu * cpu){
+    //reg2 = reg1
+    uint32_t * reg1_offset = (uint32_t *)(cpu->v_eip+1);
+    uint32_t * reg2_offset = (uint32_t *)(cpu->v_eip+2);
+    uint32_t * reg1 = (uint32_t *)cpu+(*reg1_offset);
+    uint32_t * reg2 = (uint32_t *)cpu+(*reg2_offset);
+    *reg2 = *reg1;
+    
+    cpu->v_eip +=3;
+    ;
+}
+void vMovReg2Mem(vm_cpu * cpu){
+    //mem = reg1
+    uint32_t * reg_offset = (uint32_t*)(cpu->v_eip+1);
     uint32_t * reg = (uint32_t*)cpu+(*reg_offset);
-    uint8_t* mem_offset = (uint8_t *)(cpu->v_eip+2);
-    uint32_t* mem = (uint32_t *)vm_MemBase+(*mem_offset);
+    uint32_t mem_offset = (cpu->v_rfpo);
+    uint32_t * mem_reg_base = (uint32_t*)(cpu->v_eip+2);
+    uint32_t * mem_base = (uint32_t*)cpu+(*mem_reg_base);
+    uint32_t * mem ;
+    if(mem_offset > CHUNK_SIZE){
+        //-
+        uint32_t t = 0-mem_offset;
+        mem = (uint32_t *)(*mem_base - 4*t);
+    }else{
+        //+
+        mem = (uint32_t *)(*mem_base + 4*mem_offset);
+    }
     *mem = *reg;
 
     cpu->v_eip += 3;
+    ;
 }
-
-void vAddReg2Reg(vm_cpu *cpu){
-    //vAddReg2Reg reg1 reg2
-    uint8_t * reg1_offset = (uint8_t*)(cpu->v_eip+1);
-    uint8_t * reg2_offset = (uint8_t*)(cpu->v_eip+2);
-    uint32_t * reg1 = (uint32_t*)cpu+(*reg1_offset);
-    uint32_t * reg2 = (uint32_t*)cpu+(*reg2_offset);
-    *reg2 += *reg1;
-
-    cpu->v_eip += 3;
-}
-void vAddImm2Reg(vm_cpu *cpu){
-    //vAddImm2Reg imm reg
-    uint32_t* imm = (uint32_t*)(cpu->v_eip+1);
-    uint8_t* reg_offset = (uint8_t*)(cpu->v_eip+5);
-    uint32_t * reg = (uint32_t*)cpu+(*reg_offset);
-    *reg += *imm;
-    
-    cpu->v_eip += 6;
-}
-void vAddMem2Reg(vm_cpu *cpu){
-    //vAddMem2Reg mem reg
-    uint8_t* mem_offset = (uint8_t *)(cpu->v_eip+1);
-    uint32_t* mem = (uint32_t *)vm_MemBase+(*mem_offset);
-    uint8_t * reg_offset = (uint8_t*)(cpu->v_eip+2);
-    uint32_t * reg = (uint32_t*)cpu+(*reg_offset);
-    *reg += *mem;
-
-    cpu->v_eip += 3;
-}
-void vAddImm2Mem(vm_cpu *cpu){
-    //vAddImm2Mem imm mem
-    uint32_t* imm = (uint32_t*)(cpu->v_eip+1);
-    uint8_t* mem_offset = (uint8_t *)(cpu->v_eip+5);
-    uint32_t* mem = (uint32_t *)vm_MemBase+(*mem_offset);
-    *mem += *imm;
-
-    cpu->v_eip += 6;
-}
-void vAddReg2Mem(vm_cpu *cpu){
-//vAddReg2Mem reg mem
-    uint8_t * reg_offset = (uint8_t*)(cpu->v_eip+1);
-    uint32_t * reg = (uint32_t*)cpu+(*reg_offset);
-    uint8_t* mem_offset = (uint8_t *)(cpu->v_eip+2);
-    uint32_t* mem = (uint32_t *)vm_MemBase+(*mem_offset);
-    *mem += *reg;
-
-    cpu->v_eip += 3;
-}
-void vAddMem2Mem(vm_cpu *cpu){
-    //vAddMem2Mem mem1 mem2
-    uint8_t* mem1_offset = (uint8_t *)(cpu->v_eip+1);
-    uint32_t* mem1 = (uint32_t *)vm_MemBase+(*mem1_offset);
-    uint8_t* mem2_offset = (uint8_t *)(cpu->v_eip+2);
-    uint32_t* mem2 = (uint32_t *)vm_MemBase+(*mem2_offset);
-    *mem2 += *mem1;
-
-    cpu->v_eip += 3;
-}
-//mul
-void vMulReg2Reg(vm_cpu *cpu){
-//vMulReg2Reg reg reg
-    uint8_t * reg1_offset = (uint8_t*)(cpu->v_eip+1);
-    uint8_t * reg2_offset = (uint8_t*)(cpu->v_eip+2);
-    uint32_t * reg1 = (uint32_t*)cpu+(*reg1_offset);
-    uint32_t * reg2 = (uint32_t*)cpu+(*reg2_offset);
-    *reg2 *= *reg1;
-
-    cpu->v_eip += 3;
-}
-void vMulImm2Reg(vm_cpu *cpu){
-    //vMulImm2Reg imm reg
-    uint32_t* imm = (uint32_t*)(cpu->v_eip+1);
-    uint8_t* reg_offset = (uint8_t*)(cpu->v_eip+5);
-    uint32_t * reg = (uint32_t*)cpu+(*reg_offset);
-    *reg *= *imm;
-    
-    cpu->v_eip += 6;
-}
-void vMulMem2Reg(vm_cpu *cpu){
-    //vMulMem2Reg mem reg
-    uint8_t* mem_offset = (uint8_t *)(cpu->v_eip+1);
-    uint32_t* mem = (uint32_t *)vm_MemBase+(*mem_offset);
-    uint8_t * reg_offset = (uint8_t*)(cpu->v_eip+2);
-    uint32_t * reg = (uint32_t*)cpu+(*reg_offset);
-    *reg *= *mem;
-
-    cpu->v_eip += 3;
-}
-void vMulImm2Mem(vm_cpu *cpu){
-    //vMulImm2Mem imm mem
-    uint32_t* imm = (uint32_t*)(cpu->v_eip+1);
-    uint8_t* mem_offset = (uint8_t *)(cpu->v_eip+5);
-    uint32_t* mem = (uint32_t *)vm_MemBase+(*mem_offset);
-    *mem *= *imm;
-
-    cpu->v_eip += 6;
-}
-void vMulReg2Mem(vm_cpu *cpu){
-    //vMulReg2Mem reg mem
-    uint8_t * reg_offset = (uint8_t*)(cpu->v_eip+1);
-    uint32_t * reg = (uint32_t*)cpu+(*reg_offset);
-    uint8_t* mem_offset = (uint8_t *)(cpu->v_eip+2);
-    uint32_t* mem = (uint32_t *)vm_MemBase+(*mem_offset);
-    *mem *= *reg;
-
-    cpu->v_eip += 3;
-}
-void vMulMem2Mem(vm_cpu *cpu){
-    //vMulMem2Mem mem mem
-    uint8_t* mem1_offset = (uint8_t *)(cpu->v_eip+1);
-    uint32_t* mem1 = (uint32_t *)vm_MemBase+(*mem1_offset);
-    uint8_t* mem2_offset = (uint8_t *)(cpu->v_eip+2);
-    uint32_t* mem2 = (uint32_t *)vm_MemBase+(*mem2_offset);
-    *mem2 *= *mem1;
-
-    cpu->v_eip += 3;
-}
-
-//xor
-void vXorReg2Reg(vm_cpu *cpu){
-    //vXorReg2Reg reg reg
-    uint8_t * reg1_offset = (uint8_t*)(cpu->v_eip+1);
-    uint8_t * reg2_offset = (uint8_t*)(cpu->v_eip+2);
-    uint32_t * reg1 = (uint32_t*)cpu+(*reg1_offset);
-    uint32_t * reg2 = (uint32_t*)cpu+(*reg2_offset);
-    *reg2 ^= *reg1;
-
-    cpu->v_eip += 3;
-}
-void vXorImm2Reg(vm_cpu *cpu){
-    //vXorImm2Reg imm reg
-    uint32_t* imm = (uint32_t*)(cpu->v_eip+1);
-    uint8_t* reg_offset = (uint8_t*)(cpu->v_eip+5);
-    uint32_t * reg = (uint32_t*)cpu+(*reg_offset);
-    *reg ^= *imm;
-    
-    cpu->v_eip += 6;
-}
-void vXorMem2Reg(vm_cpu *cpu){
-    //vXorMem2Reg mem reg
-    uint8_t* mem_offset = (uint8_t *)(cpu->v_eip+1);
-    uint32_t* mem = (uint32_t *)vm_MemBase+(*mem_offset);
-    uint8_t * reg_offset = (uint8_t*)(cpu->v_eip+2);
-    uint32_t * reg = (uint32_t*)cpu+(*reg_offset);
-    *reg ^= *mem;
-
-    cpu->v_eip += 3;
-}
-void vXorImm2Mem(vm_cpu *cpu){
-    //vXorImm2Mem imm mem
-    uint32_t* imm = (uint32_t*)(cpu->v_eip+1);
-    uint8_t* mem_offset = (uint8_t *)(cpu->v_eip+5);
-    uint32_t* mem = (uint32_t *)vm_MemBase+(*mem_offset);
-    *mem ^= *imm;
-
-    cpu->v_eip += 6;
-}
-void vXorReg2Mem(vm_cpu *cpu){
-    //vXorReg2Mem reg mem
-    uint8_t * reg_offset = (uint8_t*)(cpu->v_eip+1);
-    uint32_t * reg = (uint32_t*)cpu+(*reg_offset);
-    uint8_t* mem_offset = (uint8_t *)(cpu->v_eip+2);
-    uint32_t* mem = (uint32_t *)vm_MemBase+(*mem_offset);
-    *mem ^= * reg;
-
-    cpu->v_eip += 3;
-}
-void vXorMem2Mem(vm_cpu *cpu){
-    //vXorMem2Mem mem mem
-    uint8_t* mem1_offset = (uint8_t *)(cpu->v_eip+1);
-    uint32_t* mem1 = (uint32_t *)vm_MemBase+(*mem1_offset);
-    uint8_t* mem2_offset = (uint8_t *)(cpu->v_eip+2);
-    uint32_t* mem2 = (uint32_t *)vm_MemBase+(*mem2_offset);
-    *mem2 ^= *mem1;
-
-    cpu->v_eip += 3;
-}
-//cmp
-void vCmpReg2Reg(vm_cpu *cpu){
-    //vCmpReg2Reg reg1 reg2
-    uint8_t * reg1_offset = (uint8_t*)(cpu->v_eip+1);
-    uint8_t * reg2_offset = (uint8_t*)(cpu->v_eip+2);
-    uint32_t * reg1 = (uint32_t*)cpu+(*reg1_offset);
-    uint32_t * reg2 = (uint32_t*)cpu+(*reg2_offset);
-    uint32_t result = *reg1 - *reg2;  // 2-3 = -1 = 0xffffffff
-    //set efl
-    if(result == 0){
-        //set efl zf = 1
-        cpu->v_efl = 0x40;//64
+void vMovImm2Mem(vm_cpu * cpu){
+    //mem = imm
+    uint32_t * imm = (uint32_t*)(cpu->v_eip+1);
+    uint32_t mem_offset = (cpu->v_rfpo);
+    uint32_t * mem_reg_base = (uint32_t*)(cpu->v_eip+2);
+    uint32_t * mem_base = (uint32_t*)cpu+(*mem_reg_base);
+    uint32_t * mem ;
+    if(mem_offset > CHUNK_SIZE){
+        //-
+        uint32_t t = 0-mem_offset;
+        mem = (uint32_t *)(*mem_base - 4*t);
+    }else{
+        //+
+        mem = (uint32_t *)(*mem_base + 4*mem_offset);
     }
-    if(*reg1 > *reg2){
-        //set cf = 1 & zf =1
-        cpu->v_efl = 0x41;
+    *mem = *imm;
 
+    cpu->v_eip += 3;
+    ;
+}
+void vMovMem2Mem(vm_cpu * cpu){
+    //delete
+    //pass this ins can't finished
+    ;
+}
+
+void vAddReg4Imm2Reg(vm_cpu * cpu){
+    //reg2 = reg1 + imm
+    uint32_t * reg1_offset = (uint32_t*)(cpu->v_eip+1);
+    uint32_t * reg1 = (uint32_t*)cpu+(*reg1_offset);
+    uint32_t * imm = (uint32_t*)(cpu->v_eip+2);
+    uint32_t * reg2_offset = (uint32_t*)(cpu->v_eip+3);
+    uint32_t * reg2 = (uint32_t*)cpu+(*reg2_offset);
+    *reg2 = *imm + *reg1;
+    
+    cpu->v_eip += 4;
+    ;
+}
+void vAddReg4Reg2Reg(vm_cpu * cpu){
+    //reg3 = reg1 + reg2
+    uint32_t * reg1_offset = (uint32_t*)(cpu->v_eip+1);
+    uint32_t * reg1 = (uint32_t*)cpu+(*reg1_offset);
+    uint32_t * reg2_offset = (uint32_t*)(cpu->v_eip+2);
+    uint32_t * reg2 = (uint32_t*)cpu+(*reg2_offset);
+    uint32_t * reg3_offset = (uint32_t*)(cpu->v_eip+3);
+    uint32_t * reg3 = (uint32_t*)cpu+(*reg3_offset);
+    *reg3 = *reg2 + *reg1;
+
+    cpu->v_eip += 4;
+    ;
+}
+void vAddReg4Mem2Reg(vm_cpu * cpu){
+    //reg2 = reg1 + mem
+    uint32_t * reg1_offset = (uint32_t*)(cpu->v_eip+1);
+    uint32_t * reg1 = (uint32_t*)cpu+(*reg1_offset);
+    uint32_t mem_offset = (cpu->v_rfpo);
+    uint32_t * mem_reg_base = (uint32_t*)(cpu->v_eip+2);
+    uint32_t * mem_base = (uint32_t*)cpu+(*mem_reg_base);
+    uint32_t * mem ;
+    if(mem_offset > CHUNK_SIZE){
+        //-
+        uint32_t t = 0-mem_offset;
+        mem = (uint32_t *)(*mem_base - 4*t);
+    }else{
+        //+
+        mem = (uint32_t *)(*mem_base + 4*mem_offset);
     }
+    uint32_t * reg2_offset = (uint32_t*)(cpu->v_eip+3);
+    uint32_t * reg2 = (uint32_t*)cpu+(*reg2_offset);
+    *reg2 = *reg1 + *mem;
+
+    cpu->v_eip += 4;
+    ;
+}
+void vAddReg4Imm2Mem(vm_cpu * cpu){
+    //mem = reg1 + imm
+    uint32_t * reg1_offset = (uint32_t*)(cpu->v_eip+1);
+    uint32_t * reg1 = (uint32_t*)cpu+(*reg1_offset);
+    uint32_t * imm = (uint32_t*)(cpu->v_eip+2);
+    uint32_t mem_offset = (cpu->v_rfpo);
+    uint32_t * mem_reg_base = (uint32_t*)(cpu->v_eip+3);
+    uint32_t * mem_base = (uint32_t*)cpu+(*mem_reg_base);
+    uint32_t * mem ;
+    if(mem_offset > CHUNK_SIZE){
+        //-
+        uint32_t t = 0-mem_offset;
+        mem = (uint32_t *)(*mem_base - 4*t);
+    }else{
+        //+
+        mem = (uint32_t *)(*mem_base + 4*mem_offset);
+    }
+    *mem = *imm + *reg1;
+    
+    cpu->v_eip += 4;
+    ;
+}
+void vAddReg4Reg2Mem(vm_cpu * cpu){
+    //mem = reg1 + reg2
+    uint32_t * reg1_offset = (uint32_t*)(cpu->v_eip+1);
+    uint32_t * reg1 = (uint32_t*)cpu+(*reg1_offset);
+    uint32_t * reg2_offset = (uint32_t*)(cpu->v_eip+2);
+    uint32_t * reg2 = (uint32_t*)cpu+(*reg2_offset);
+    uint32_t mem_offset = (cpu->v_rfpo);
+    uint32_t * mem_reg_base = (uint32_t*)(cpu->v_eip+3);
+    uint32_t * mem_base = (uint32_t*)cpu+(*mem_reg_base);
+    uint32_t * mem ;
+    if(mem_offset > CHUNK_SIZE){
+        //-
+        uint32_t t = 0-mem_offset;
+        mem = (uint32_t *)(*mem_base - 4*t);
+    }else{
+        //+
+        mem = (uint32_t *)(*mem_base + 4*mem_offset);
+    }
+    *mem = *reg1 + *reg2;
+
+    cpu->v_eip += 4;
+    ;
+}
+void vAddReg4Mem2Mem(vm_cpu * cpu){
+    //pass 
+    ;
+}
+
+void vSubReg4Imm2Reg(vm_cpu * cpu){
+    //reg2 = reg1 - imm
+    uint32_t * reg1_offset = (uint32_t*)(cpu->v_eip+1);
+    uint32_t * reg1 = (uint32_t*)cpu+(*reg1_offset);
+    uint32_t * imm = (uint32_t*)(cpu->v_eip+2);
+    uint32_t * reg2_offset = (uint32_t*)(cpu->v_eip+3);
+    uint32_t * reg2 = (uint32_t*)cpu+(*reg2_offset);
+    *reg2 = *reg1 - *imm;
+    
+    cpu->v_eip += 4;
+    ;
+}
+void vSubReg4Reg2Reg(vm_cpu * cpu){
+    //reg3 = reg1 - reg2
+    uint32_t * reg1_offset = (uint32_t*)(cpu->v_eip+1);
+    uint32_t * reg1 = (uint32_t*)cpu+(*reg1_offset);
+    uint32_t * reg2_offset = (uint32_t*)(cpu->v_eip+2);
+    uint32_t * reg2 = (uint32_t*)cpu+(*reg2_offset);
+    uint32_t * reg3_offset = (uint32_t*)(cpu->v_eip+3);
+    uint32_t * reg3 = (uint32_t*)cpu+(*reg3_offset);
+    *reg3 = *reg1 - *reg2;
+
+    cpu->v_eip += 4;
+    ;
+}
+void vSubReg4Mem2Reg(vm_cpu * cpu){
+    //reg2 = reg1 - mem
+    uint32_t * reg1_offset = (uint32_t*)(cpu->v_eip+1);
+    uint32_t * reg1 = (uint32_t*)cpu+(*reg1_offset);
+    uint32_t mem_offset = (cpu->v_rfpo);
+    uint32_t * mem_reg_base = (uint32_t*)(cpu->v_eip+2);
+    uint32_t * mem_base = (uint32_t*)cpu+(*mem_reg_base);
+    uint32_t * mem ;
+    if(mem_offset > CHUNK_SIZE){
+        //-
+        uint32_t t = 0-mem_offset;
+        mem = (uint32_t *)(*mem_base - 4*t);
+    }else{
+        //+
+        mem = (uint32_t *)(*mem_base + 4*mem_offset);
+    }
+    uint32_t * reg2_offset = (uint32_t*)(cpu->v_eip+3);
+    uint32_t * reg2 = (uint32_t*)cpu+(*reg2_offset);
+    *reg2 = *reg1 - *mem;
+
+    cpu->v_eip += 4;
+    ;
+}
+void vSubReg4Imm2Mem(vm_cpu * cpu){
+    //mem = reg1 - imm
+    uint32_t * reg1_offset = (uint32_t*)(cpu->v_eip+1);
+    uint32_t * reg1 = (uint32_t*)cpu+(*reg1_offset);
+    uint32_t * imm = (uint32_t*)(cpu->v_eip+2);
+    uint32_t mem_offset = (cpu->v_rfpo);
+    uint32_t * mem_reg_base = (uint32_t*)(cpu->v_eip+3);
+    uint32_t * mem_base = (uint32_t*)cpu+(*mem_reg_base);
+    uint32_t * mem ;
+    if(mem_offset > CHUNK_SIZE){
+        //-
+        uint32_t t = 0-mem_offset;
+        mem = (uint32_t *)(*mem_base - 4*t);
+    }else{
+        //+
+        mem = (uint32_t *)(*mem_base + 4*mem_offset);
+    }
+    *mem = *reg1 - *imm;
+    
+    cpu->v_eip += 4;
+    ;
+}
+void vSubReg4Reg2Mem(vm_cpu * cpu){
+    //mem = reg1 - reg2
+    uint32_t * reg1_offset = (uint32_t*)(cpu->v_eip+1);
+    uint32_t * reg1 = (uint32_t*)cpu+(*reg1_offset);
+    uint32_t * reg2_offset = (uint32_t*)(cpu->v_eip+2);
+    uint32_t * reg2 = (uint32_t*)cpu+(*reg2_offset);
+    uint32_t mem_offset = (cpu->v_rfpo);
+    uint32_t * mem_reg_base = (uint32_t*)(cpu->v_eip+3);
+    uint32_t * mem_base = (uint32_t*)cpu+(*mem_reg_base);
+    uint32_t * mem ;
+    if(mem_offset > CHUNK_SIZE){
+        //-
+        uint32_t t = 0-mem_offset;
+        mem = (uint32_t *)(*mem_base - 4*t);
+    }else{
+        //+
+        mem = (uint32_t *)(*mem_base + 4*mem_offset);
+    }
+    *mem = *reg1 - *reg2;
+
+    cpu->v_eip += 4;
+    ;
+}
+void vSubReg4Mem2Mem(vm_cpu * cpu){
+    //delete
+    ;
+}
+
+void vMulReg4Imm2Reg(vm_cpu * cpu){
+    //reg2 = reg1 * imm
+    uint32_t * reg1_offset = (uint32_t*)(cpu->v_eip+1);
+    uint32_t * reg1 = (uint32_t*)cpu+(*reg1_offset);
+    uint32_t * imm = (uint32_t*)(cpu->v_eip+2);
+    uint32_t * reg2_offset = (uint32_t*)(cpu->v_eip+3);
+    uint32_t * reg2 = (uint32_t*)cpu+(*reg2_offset);
+    *reg2 = *reg1 * *imm;
+    
+    cpu->v_eip += 4;
+    ;
+}
+void vMulReg4Reg2Reg(vm_cpu * cpu){
+    //reg3 = reg1 * reg2
+    uint32_t * reg1_offset = (uint32_t*)(cpu->v_eip+1);
+    uint32_t * reg1 = (uint32_t*)cpu+(*reg1_offset);
+    uint32_t * reg2_offset = (uint32_t*)(cpu->v_eip+2);
+    uint32_t * reg2 = (uint32_t*)cpu+(*reg2_offset);
+    uint32_t * reg3_offset = (uint32_t*)(cpu->v_eip+3);
+    uint32_t * reg3 = (uint32_t*)cpu+(*reg3_offset);
+    *reg3 = *reg1 * *reg2;
+
+    cpu->v_eip += 4;
+    ;
+}
+void vMulReg4Mem2Reg(vm_cpu * cpu){
+    //reg2 = reg1 * mem
+    uint32_t * reg1_offset = (uint32_t*)(cpu->v_eip+1);
+    uint32_t * reg1 = (uint32_t*)cpu+(*reg1_offset);
+    uint32_t mem_offset = (cpu->v_rfpo);
+    uint32_t * mem_reg_base = (uint32_t*)(cpu->v_eip+2);
+    uint32_t * mem_base = (uint32_t*)cpu+(*mem_reg_base);
+    uint32_t * mem ;
+    if(mem_offset > CHUNK_SIZE){
+        //-
+        uint32_t t = 0-mem_offset;
+        mem = (uint32_t *)(*mem_base - 4*t);
+    }else{
+        //+
+        mem = (uint32_t *)(*mem_base + 4*mem_offset);
+    }
+    uint32_t * reg2_offset = (uint32_t*)(cpu->v_eip+3);
+    uint32_t * reg2 = (uint32_t*)cpu+(*reg2_offset);
+    *reg2 = *reg1 * *mem;
+
+    cpu->v_eip += 4;
+    ;
+}
+void vMulReg4Imm2Mem(vm_cpu * cpu){
+    //mem = reg1 * imm
+    uint32_t * reg1_offset = (uint32_t*)(cpu->v_eip+1);
+    uint32_t * reg1 = (uint32_t*)cpu+(*reg1_offset);
+    uint32_t * imm = (uint32_t*)(cpu->v_eip+2);
+    uint32_t mem_offset = (cpu->v_rfpo);
+    uint32_t * mem_reg_base = (uint32_t*)(cpu->v_eip+3);
+    uint32_t * mem_base = (uint32_t*)cpu+(*mem_reg_base);
+    uint32_t * mem ;
+    if(mem_offset > CHUNK_SIZE){
+        //-
+        uint32_t t = 0-mem_offset;
+        mem = (uint32_t *)(*mem_base - 4*t);
+    }else{
+        //+
+        mem = (uint32_t *)(*mem_base + 4*mem_offset);
+    }
+    *mem = *reg1 * *imm;
+    
+    cpu->v_eip += 4;
+    ;
+}
+void vMulReg4Reg2Mem(vm_cpu * cpu){
+    //mem = reg1 * reg2
+    uint32_t * reg1_offset = (uint32_t*)(cpu->v_eip+1);
+    uint32_t * reg1 = (uint32_t*)cpu+(*reg1_offset);
+    uint32_t * reg2_offset = (uint32_t*)(cpu->v_eip+2);
+    uint32_t * reg2 = (uint32_t*)cpu+(*reg2_offset);
+    uint32_t mem_offset = (cpu->v_rfpo);
+    uint32_t * mem_reg_base = (uint32_t*)(cpu->v_eip+3);
+    uint32_t * mem_base = (uint32_t*)cpu+(*mem_reg_base);
+    uint32_t * mem ;
+    if(mem_offset > CHUNK_SIZE){
+        //-
+        uint32_t t = 0-mem_offset;
+        mem = (uint32_t *)(*mem_base - 4*t);
+    }else{
+        //+
+        mem = (uint32_t *)(*mem_base + 4*mem_offset);
+    }
+    *mem = *reg1 * *reg2;
+
+    cpu->v_eip += 4;
+    ;
+}
+void vMulReg4Mem2Mem(vm_cpu * cpu){
+    //delete
+    ;
+}
+
+void vSraReg4Imm2Reg(vm_cpu * cpu){
+    //reg2 = reg1 >> imm
+    uint32_t * reg1_offset = (uint32_t*)(cpu->v_eip+1);
+    uint32_t * reg1 = (uint32_t*)cpu+(*reg1_offset);
+    uint32_t * imm = (uint32_t*)(cpu->v_eip+2);
+    uint32_t * reg2_offset = (uint32_t*)(cpu->v_eip+3);
+    uint32_t * reg2 = (uint32_t*)cpu+(*reg2_offset);
+    *reg2 = *reg1 >> *imm;
+    
+    cpu->v_eip += 4;
+    ;
+}
+void vSraReg4Reg2Reg(vm_cpu * cpu){
+    //reg3 = reg2 >> reg1
+    uint32_t * reg1_offset = (uint32_t*)(cpu->v_eip+1);
+    uint32_t * reg1 = (uint32_t*)cpu+(*reg1_offset);
+    uint32_t * reg2_offset = (uint32_t*)(cpu->v_eip+2);
+    uint32_t * reg2 = (uint32_t*)cpu+(*reg2_offset);
+    uint32_t * reg3_offset = (uint32_t*)(cpu->v_eip+3);
+    uint32_t * reg3 = (uint32_t*)cpu+(*reg3_offset);
+    *reg3 = *reg1 >> *reg2;
+
+    cpu->v_eip += 4;
+    ;
+}
+void vSraReg4Mem2Reg(vm_cpu * cpu){
+    //reg2 = reg1 >> mem
+    uint32_t * reg1_offset = (uint32_t*)(cpu->v_eip+1);
+    uint32_t * reg1 = (uint32_t*)cpu+(*reg1_offset);
+    uint32_t mem_offset = (cpu->v_rfpo);
+    uint32_t * mem_reg_base = (uint32_t*)(cpu->v_eip+2);
+    uint32_t * mem_base = (uint32_t*)cpu+(*mem_reg_base);
+    uint32_t * mem ;
+    if(mem_offset > CHUNK_SIZE){
+        //-
+        uint32_t t = 0-mem_offset;
+        mem = (uint32_t *)(*mem_base - 4*t);
+    }else{
+        //+
+        mem = (uint32_t *)(*mem_base + 4*mem_offset);
+    }
+    uint32_t * reg2_offset = (uint32_t*)(cpu->v_eip+3);
+    uint32_t * reg2 = (uint32_t*)cpu+(*reg2_offset);
+    *reg2 = *reg1 >> *mem;
+
+    cpu->v_eip += 4;
+    ;
+}
+void vSraReg4Imm2Mem(vm_cpu * cpu){
+    //mem = reg1 >> imm
+    uint32_t * reg1_offset = (uint32_t*)(cpu->v_eip+1);
+    uint32_t * reg1 = (uint32_t*)cpu+(*reg1_offset);
+    uint32_t * imm = (uint32_t*)(cpu->v_eip+2);
+    uint32_t mem_offset = (cpu->v_rfpo);
+    uint32_t * mem_reg_base = (uint32_t*)(cpu->v_eip+3);
+    uint32_t * mem_base = (uint32_t*)cpu+(*mem_reg_base);
+    uint32_t * mem ;
+    if(mem_offset > CHUNK_SIZE){
+        //-
+        uint32_t t = 0-mem_offset;
+        mem = (uint32_t *)(*mem_base - 4*t);
+    }else{
+        //+
+        mem = (uint32_t *)(*mem_base + 4*mem_offset);
+    }
+    *mem = *reg1 >> *imm;
+    
+    cpu->v_eip += 4;
+    ;
+}
+void vSraReg4Reg2Mem(vm_cpu * cpu){
+    //mem = reg1 >> reg2
+    uint32_t * reg1_offset = (uint32_t*)(cpu->v_eip+1);
+    uint32_t * reg1 = (uint32_t*)cpu+(*reg1_offset);
+    uint32_t * reg2_offset = (uint32_t*)(cpu->v_eip+2);
+    uint32_t * reg2 = (uint32_t*)cpu+(*reg2_offset);
+    uint32_t mem_offset = (cpu->v_rfpo);
+    uint32_t * mem_reg_base = (uint32_t*)(cpu->v_eip+3);
+    uint32_t * mem_base = (uint32_t*)cpu+(*mem_reg_base);
+    uint32_t * mem ;
+    if(mem_offset > CHUNK_SIZE){
+        //-
+        uint32_t t = 0-mem_offset;
+        mem = (uint32_t *)(*mem_base - 4*t);
+    }else{
+        //+
+        mem = (uint32_t *)(*mem_base + 4*mem_offset);
+    }
+    *mem = *reg1 >> *reg2;
+
+    cpu->v_eip += 4;
+    ;
+}
+void vSraReg4Mem2Mem(vm_cpu * cpu){
+    //delete
+    ;
+}
+
+void vSllReg4Imm2Reg(vm_cpu * cpu){
+    //reg2 = reg1 << imm
+        uint32_t * reg1_offset = (uint32_t*)(cpu->v_eip+1);
+    uint32_t * reg1 = (uint32_t*)cpu+(*reg1_offset);
+    uint32_t * imm = (uint32_t*)(cpu->v_eip+2);
+    uint32_t * reg2_offset = (uint32_t*)(cpu->v_eip+3);
+    uint32_t * reg2 = (uint32_t*)cpu+(*reg2_offset);
+    *reg2 = *reg1 << *imm;
+    
+    cpu->v_eip += 4;
+    ;
+}
+void vSllReg4Reg2Reg(vm_cpu * cpu){
+    //reg3 = reg1 << reg2
+    uint32_t * reg1_offset = (uint32_t*)(cpu->v_eip+1);
+    uint32_t * reg1 = (uint32_t*)cpu+(*reg1_offset);
+    uint32_t * reg2_offset = (uint32_t*)(cpu->v_eip+2);
+    uint32_t * reg2 = (uint32_t*)cpu+(*reg2_offset);
+    uint32_t * reg3_offset = (uint32_t*)(cpu->v_eip+3);
+    uint32_t * reg3 = (uint32_t*)cpu+(*reg3_offset);
+    *reg3 = *reg1 << *reg2;
+
+    cpu->v_eip += 4;
+    ;
+}
+void vSllReg4Mem2Reg(vm_cpu * cpu){
+    //reg2 = reg1 << mem
+    uint32_t * reg1_offset = (uint32_t*)(cpu->v_eip+1);
+    uint32_t * reg1 = (uint32_t*)cpu+(*reg1_offset);
+    uint32_t mem_offset = (cpu->v_rfpo);
+    uint32_t * mem_reg_base = (uint32_t*)(cpu->v_eip+2);
+    uint32_t * mem_base = (uint32_t*)cpu+(*mem_reg_base);
+    uint32_t * mem ;
+    if(mem_offset > CHUNK_SIZE){
+        //-
+        uint32_t t = 0-mem_offset;
+        mem = (uint32_t *)(*mem_base - 4*t);
+    }else{
+        //+
+        mem = (uint32_t *)(*mem_base + 4*mem_offset);
+    }
+    uint32_t * reg2_offset = (uint32_t*)(cpu->v_eip+3);
+    uint32_t * reg2 = (uint32_t*)cpu+(*reg2_offset);
+    *reg2 = *reg1 << *mem;
+
+    cpu->v_eip += 4;
+    ;
+}
+void vSllReg4Imm2Mem(vm_cpu * cpu){
+    //mem = reg1 << imm
+    uint32_t * reg1_offset = (uint32_t*)(cpu->v_eip+1);
+    uint32_t * reg1 = (uint32_t*)cpu+(*reg1_offset);
+    uint32_t * imm = (uint32_t*)(cpu->v_eip+2);
+    uint32_t mem_offset = (cpu->v_rfpo);
+    uint32_t * mem_reg_base = (uint32_t*)(cpu->v_eip+3);
+    uint32_t * mem_base = (uint32_t*)cpu+(*mem_reg_base);
+    uint32_t * mem ;
+    if(mem_offset > CHUNK_SIZE){
+        //-
+        uint32_t t = 0-mem_offset;
+        mem = (uint32_t *)(*mem_base - 4*t);
+    }else{
+        //+
+        mem = (uint32_t *)(*mem_base + 4*mem_offset);
+    }
+    *mem = *reg1 << *imm;
+    
+    cpu->v_eip += 4;
+    ;
+}
+void vSllReg4Reg2Mem(vm_cpu * cpu){
+    //mem = reg1 << reg2
+    uint32_t * reg1_offset = (uint32_t*)(cpu->v_eip+1);
+    uint32_t * reg1 = (uint32_t*)cpu+(*reg1_offset);
+    uint32_t * reg2_offset = (uint32_t*)(cpu->v_eip+2);
+    uint32_t * reg2 = (uint32_t*)cpu+(*reg2_offset);
+    uint32_t mem_offset = (cpu->v_rfpo);
+    uint32_t * mem_reg_base = (uint32_t*)(cpu->v_eip+3);
+    uint32_t * mem_base = (uint32_t*)cpu+(*mem_reg_base);
+    uint32_t * mem ;
+    if(mem_offset > CHUNK_SIZE){
+        //-
+        uint32_t t = 0-mem_offset;
+        mem = (uint32_t *)(*mem_base - 4*t);
+    }else{
+        //+
+        mem = (uint32_t *)(*mem_base + 4*mem_offset);
+    }
+    *mem = *reg1 << *reg2;
+
+    cpu->v_eip += 4;
+    ;
+}
+void vSllReg4Mem2Mem(vm_cpu * cpu){
+    //delete
+    ;
+}
+
+void vXorReg4Imm2Reg(vm_cpu * cpu){
+    //reg2 = reg2 ^ imm
+    uint32_t * reg1_offset = (uint32_t*)(cpu->v_eip+1);
+    uint32_t * reg1 = (uint32_t*)cpu+(*reg1_offset);
+    uint32_t * imm = (uint32_t*)(cpu->v_eip+2);
+    uint32_t * reg2_offset = (uint32_t*)(cpu->v_eip+3);
+    uint32_t * reg2 = (uint32_t*)cpu+(*reg2_offset);
+    *reg2 = *reg1 ^ *imm;
+    
+    cpu->v_eip += 4;
+    ;
+}
+void vXorReg4Reg2Reg(vm_cpu * cpu){
+    //reg3 = reg1 ^ reg2
+    uint32_t * reg1_offset = (uint32_t*)(cpu->v_eip+1);
+    uint32_t * reg1 = (uint32_t*)cpu+(*reg1_offset);
+    uint32_t * reg2_offset = (uint32_t*)(cpu->v_eip+2);
+    uint32_t * reg2 = (uint32_t*)cpu+(*reg2_offset);
+    uint32_t * reg3_offset = (uint32_t*)(cpu->v_eip+3);
+    uint32_t * reg3 = (uint32_t*)cpu+(*reg3_offset);
+    *reg3 = *reg1 ^ *reg2;
+
+    cpu->v_eip += 4;
+    ;
+}
+void vXorReg4Mem2Reg(vm_cpu * cpu){
+    //reg2 = reg1 ^ mem
+    uint32_t * reg1_offset = (uint32_t*)(cpu->v_eip+1);
+    uint32_t * reg1 = (uint32_t*)cpu+(*reg1_offset);
+    uint32_t mem_offset = (cpu->v_rfpo);
+    uint32_t * mem_reg_base = (uint32_t*)(cpu->v_eip+2);
+    uint32_t * mem_base = (uint32_t*)cpu+(*mem_reg_base);
+    uint32_t * mem ;
+    if(mem_offset > CHUNK_SIZE){
+        //-
+        uint32_t t = 0-mem_offset;
+        mem = (uint32_t *)(*mem_base - 4*t);
+    }else{
+        //+
+        mem = (uint32_t *)(*mem_base + 4*mem_offset);
+    }
+    uint32_t * reg2_offset = (uint32_t*)(cpu->v_eip+3);
+    uint32_t * reg2 = (uint32_t*)cpu+(*reg2_offset);
+    *reg2 = *reg1 ^ *mem;
+
+    cpu->v_eip += 4;
+    ;
+}
+void vXorReg4Imm2Mem(vm_cpu * cpu){
+    //mem = reg1 ^ imm
+    uint32_t * reg1_offset = (uint32_t*)(cpu->v_eip+1);
+    uint32_t * reg1 = (uint32_t*)cpu+(*reg1_offset);
+    uint32_t * imm = (uint32_t*)(cpu->v_eip+2);
+    uint32_t mem_offset = (cpu->v_rfpo);
+    uint32_t * mem_reg_base = (uint32_t*)(cpu->v_eip+3);
+    uint32_t * mem_base = (uint32_t*)cpu+(*mem_reg_base);
+    uint32_t * mem ;
+    if(mem_offset > CHUNK_SIZE){
+        //-
+        uint32_t t = 0-mem_offset;
+        mem = (uint32_t *)(*mem_base - 4*t);
+    }else{
+        //+
+        mem = (uint32_t *)(*mem_base + 4*mem_offset);
+    }
+    *mem = *reg1 ^ *imm;
+    
+    cpu->v_eip += 4;
+    ;
+}
+void vXorReg4Reg2Mem(vm_cpu * cpu){
+    //mem = reg1 ^ reg2
+    uint32_t * reg1_offset = (uint32_t*)(cpu->v_eip+1);
+    uint32_t * reg1 = (uint32_t*)cpu+(*reg1_offset);
+    uint32_t * reg2_offset = (uint32_t*)(cpu->v_eip+2);
+    uint32_t * reg2 = (uint32_t*)cpu+(*reg2_offset);
+    uint32_t mem_offset = (cpu->v_rfpo);
+    uint32_t * mem_reg_base = (uint32_t*)(cpu->v_eip+3);
+    uint32_t * mem_base = (uint32_t*)cpu+(*mem_reg_base);
+    uint32_t * mem ;
+    if(mem_offset > CHUNK_SIZE){
+        //-
+        uint32_t t = 0-mem_offset;
+        mem = (uint32_t *)(*mem_base - 4*t);
+    }else{
+        //+
+        mem = (uint32_t *)(*mem_base + 4*mem_offset);
+    }
+    *mem = *reg1 ^ *reg2;
+
+    cpu->v_eip += 4;
+    ;
+}
+void vXorReg4Mem2Mem(vm_cpu * cpu){
+    //delete
+    ;
+}
+
+void vAndReg4Imm2Reg(vm_cpu * cpu){
+    //reg2 = reg1 & imm
+    uint32_t * reg1_offset = (uint32_t*)(cpu->v_eip+1);
+    uint32_t * reg1 = (uint32_t*)cpu+(*reg1_offset);
+    uint32_t * imm = (uint32_t*)(cpu->v_eip+2);
+    uint32_t * reg2_offset = (uint32_t*)(cpu->v_eip+3);
+    uint32_t * reg2 = (uint32_t*)cpu+(*reg2_offset);
+    *reg2 = *reg1 & *imm;
+    
+    cpu->v_eip += 4;
+    ;
+}
+void vAndReg4Reg2Reg(vm_cpu * cpu){
+    //reg3 = reg1 & reg2
+    uint32_t * reg1_offset = (uint32_t*)(cpu->v_eip+1);
+    uint32_t * reg1 = (uint32_t*)cpu+(*reg1_offset);
+    uint32_t * reg2_offset = (uint32_t*)(cpu->v_eip+2);
+    uint32_t * reg2 = (uint32_t*)cpu+(*reg2_offset);
+    uint32_t * reg3_offset = (uint32_t*)(cpu->v_eip+3);
+    uint32_t * reg3 = (uint32_t*)cpu+(*reg3_offset);
+    *reg3 = *reg1 & *reg2;
+
+    cpu->v_eip += 4;
+    ;
+}
+void vAndReg4Mem2Reg(vm_cpu * cpu){
+    //reg2 = reg1 & mem
+    uint32_t * reg1_offset = (uint32_t*)(cpu->v_eip+1);
+    uint32_t * reg1 = (uint32_t*)cpu+(*reg1_offset);
+    uint32_t mem_offset = (cpu->v_rfpo);
+    uint32_t * mem_reg_base = (uint32_t*)(cpu->v_eip+2);
+    uint32_t * mem_base = (uint32_t*)cpu+(*mem_reg_base);
+    uint32_t * mem ;
+    if(mem_offset > CHUNK_SIZE){
+        //-
+        uint32_t t = 0-mem_offset;
+        mem = (uint32_t *)(*mem_base - 4*t);
+    }else{
+        //+
+        mem = (uint32_t *)(*mem_base + 4*mem_offset);
+    }
+    uint32_t * reg2_offset = (uint32_t*)(cpu->v_eip+3);
+    uint32_t * reg2 = (uint32_t*)cpu+(*reg2_offset);
+    *reg2 = *reg1 & *mem;
+
+    cpu->v_eip += 4;
+    ;
+}
+void vAndReg4Imm2Mem(vm_cpu * cpu){
+    //mem = reg1 & imm
+    uint32_t * reg1_offset = (uint32_t*)(cpu->v_eip+1);
+    uint32_t * reg1 = (uint32_t*)cpu+(*reg1_offset);
+    uint32_t * imm = (uint32_t*)(cpu->v_eip+2);
+    uint32_t mem_offset = (cpu->v_rfpo);
+    uint32_t * mem_reg_base = (uint32_t*)(cpu->v_eip+3);
+    uint32_t * mem_base = (uint32_t*)cpu+(*mem_reg_base);
+    uint32_t * mem ;
+    if(mem_offset > CHUNK_SIZE){
+        //-
+        uint32_t t = 0-mem_offset;
+        mem = (uint32_t *)(*mem_base - 4*t);
+    }else{
+        //+
+        mem = (uint32_t *)(*mem_base + 4*mem_offset);
+    }
+    *mem = *reg1 & *imm;
+    
+    cpu->v_eip += 4;
+    ;
+}
+void vAndReg4Reg2Mem(vm_cpu * cpu){
+    //mem = reg1 & reg2
+    uint32_t * reg1_offset = (uint32_t*)(cpu->v_eip+1);
+    uint32_t * reg1 = (uint32_t*)cpu+(*reg1_offset);
+    uint32_t * reg2_offset = (uint32_t*)(cpu->v_eip+2);
+    uint32_t * reg2 = (uint32_t*)cpu+(*reg2_offset);
+    uint32_t mem_offset = (cpu->v_rfpo);
+    uint32_t * mem_reg_base = (uint32_t*)(cpu->v_eip+3);
+    uint32_t * mem_base = (uint32_t*)cpu+(*mem_reg_base);
+    uint32_t * mem ;
+    if(mem_offset > CHUNK_SIZE){
+        //-
+        uint32_t t = 0-mem_offset;
+        mem = (uint32_t *)(*mem_base - 4*t);
+    }else{
+        //+
+        mem = (uint32_t *)(*mem_base + 4*mem_offset);
+    }
+    *mem = *reg1 & *reg2;
+
+    cpu->v_eip += 4;
+    ;
+}
+void vAndReg4Mem2Mem(vm_cpu * cpu){
+    //delete
+    ;
+}
+
+void vOrReg4Imm2Reg(vm_cpu * cpu){
+    //reg2 = reg1 | imm
+    uint32_t * reg1_offset = (uint32_t*)(cpu->v_eip+1);
+    uint32_t * reg1 = (uint32_t*)cpu+(*reg1_offset);
+    uint32_t * imm = (uint32_t*)(cpu->v_eip+2);
+    uint32_t * reg2_offset = (uint32_t*)(cpu->v_eip+3);
+    uint32_t * reg2 = (uint32_t*)cpu+(*reg2_offset);
+    *reg2 = *reg1 | *imm;
+    
+    cpu->v_eip += 4;
+    ;
+}
+void vOrReg4Reg2Reg(vm_cpu * cpu){
+    //reg3 = reg1 | reg2
+    uint32_t * reg1_offset = (uint32_t*)(cpu->v_eip+1);
+    uint32_t * reg1 = (uint32_t*)cpu+(*reg1_offset);
+    uint32_t * reg2_offset = (uint32_t*)(cpu->v_eip+2);
+    uint32_t * reg2 = (uint32_t*)cpu+(*reg2_offset);
+    uint32_t * reg3_offset = (uint32_t*)(cpu->v_eip+3);
+    uint32_t * reg3 = (uint32_t*)cpu+(*reg3_offset);
+    *reg3 = *reg1 | *reg2;
+
+    cpu->v_eip += 4;
+    ;
+}
+void vOrReg4Mem2Reg(vm_cpu * cpu){
+    //reg2 = reg1 | mem
+    uint32_t * reg1_offset = (uint32_t*)(cpu->v_eip+1);
+    uint32_t * reg1 = (uint32_t*)cpu+(*reg1_offset);
+    uint32_t mem_offset = (cpu->v_rfpo);
+    uint32_t * mem_reg_base = (uint32_t*)(cpu->v_eip+2);
+    uint32_t * mem_base = (uint32_t*)cpu+(*mem_reg_base);
+    uint32_t * mem;
+    if(mem_offset > CHUNK_SIZE){
+        //-
+        uint32_t t = 0-mem_offset;
+        mem = (uint32_t *)(*mem_base - 4*t);
+    }else{
+        //+
+        mem = (uint32_t *)(*mem_base + 4*mem_offset);
+    }
+    uint32_t * reg2_offset = (uint32_t*)(cpu->v_eip+3);
+    uint32_t * reg2 = (uint32_t*)cpu+(*reg2_offset);
+    *reg2 = *reg1 | *mem;
+
+    cpu->v_eip += 4;
+    ;
+}
+void vOrReg4Imm2Mem(vm_cpu * cpu){
+    //mem = reg1 | imm
+    uint32_t * reg1_offset = (uint32_t*)(cpu->v_eip+1);
+    uint32_t * reg1 = (uint32_t*)cpu+(*reg1_offset);
+    uint32_t * imm = (uint32_t*)(cpu->v_eip+2);
+    uint32_t mem_offset = (cpu->v_rfpo);
+    uint32_t * mem_reg_base = (uint32_t*)(cpu->v_eip+3);
+    uint32_t * mem_base = (uint32_t*)cpu+(*mem_reg_base);
+    uint32_t * mem ;
+    if(mem_offset > CHUNK_SIZE){
+        //-
+        uint32_t t = 0-mem_offset;
+        mem = (uint32_t *)(*mem_base - 4*t);
+    }else{
+        //+
+        mem = (uint32_t *)(*mem_base + 4*mem_offset);
+    }
+    *mem = *reg1 | *imm;
+    
+    cpu->v_eip += 4;
+    ;
+}
+void vOrReg4Reg2Mem(vm_cpu * cpu){
+    //mem = reg1 | reg2
+    uint32_t * reg1_offset = (uint32_t*)(cpu->v_eip+1);
+    uint32_t * reg1 = (uint32_t*)cpu+(*reg1_offset);
+    uint32_t * reg2_offset = (uint32_t*)(cpu->v_eip+2);
+    uint32_t * reg2 = (uint32_t*)cpu+(*reg2_offset);
+    uint32_t mem_offset = (cpu->v_rfpo);
+    uint32_t * mem_reg_base = (uint32_t*)(cpu->v_eip+3);
+    uint32_t * mem_base = (uint32_t*)cpu+(*mem_reg_base);
+    uint32_t * mem ;
+    if(mem_offset > CHUNK_SIZE){
+        //-
+        uint32_t t = 0-mem_offset;
+        mem = (uint32_t *)(*mem_base - 4*t);
+    }else{
+        //+
+        mem = (uint32_t *)(*mem_base + 4*mem_offset);
+    }
+    *mem = *reg1 | *reg2;
+
+    cpu->v_eip += 4;
+    ;
+}
+void vOrReg4Mem2Mem(vm_cpu * cpu){
+    //delete
+    ;
+}
+
+void vNorReg4Imm2Reg(vm_cpu * cpu){
+    //reg2 = ~(reg1 | imm)
+    uint32_t * reg1_offset = (uint32_t*)(cpu->v_eip+1);
+    uint32_t * reg1 = (uint32_t*)cpu+(*reg1_offset);
+    uint32_t * imm = (uint32_t*)(cpu->v_eip+2);
+    uint32_t * reg2_offset = (uint32_t*)(cpu->v_eip+3);
+    uint32_t * reg2 = (uint32_t*)cpu+(*reg2_offset);
+    *reg2 = ~(*reg1 | *imm);
+    
+    cpu->v_eip += 4;
+    ;
+}
+void vNorReg4Reg2Reg(vm_cpu * cpu){
+    //reg3 = ~(reg1 | reg2)
+    uint32_t * reg1_offset = (uint32_t*)(cpu->v_eip+1);
+    uint32_t * reg1 = (uint32_t*)cpu+(*reg1_offset);
+    uint32_t * reg2_offset = (uint32_t*)(cpu->v_eip+2);
+    uint32_t * reg2 = (uint32_t*)cpu+(*reg2_offset);
+    uint32_t * reg3_offset = (uint32_t*)(cpu->v_eip+3);
+    uint32_t * reg3 = (uint32_t*)cpu+(*reg3_offset);
+    *reg3 = ~(*reg1 | *reg2);
+
+    cpu->v_eip += 4;
+    ;
+}
+void vNorReg4Mem2Reg(vm_cpu * cpu){
+    //reg2 = ~(reg1 | mem)
+    uint32_t * reg1_offset = (uint32_t*)(cpu->v_eip+1);
+    uint32_t * reg1 = (uint32_t*)cpu+(*reg1_offset);
+    uint32_t mem_offset = (cpu->v_rfpo);
+    uint32_t * mem_reg_base = (uint32_t*)(cpu->v_eip+2);
+    uint32_t * mem_base = (uint32_t*)cpu+(*mem_reg_base);
+    uint32_t * mem ;
+    if(mem_offset > CHUNK_SIZE){
+        //-
+        uint32_t t = 0-mem_offset;
+        mem = (uint32_t *)(*mem_base - 4*t);
+    }else{
+        //+
+        mem = (uint32_t *)(*mem_base + 4*mem_offset);
+    }
+    uint32_t * reg2_offset = (uint32_t*)(cpu->v_eip+3);
+    uint32_t * reg2 = (uint32_t*)cpu+(*reg2_offset);
+    *reg2 = ~(*reg1 | *mem);
+
+    cpu->v_eip += 4;
+    ;
+}
+void vNorReg4Imm2Mem(vm_cpu * cpu){
+    //mem = ~(reg1 | imm)
+    uint32_t * reg1_offset = (uint32_t*)(cpu->v_eip+1);
+    uint32_t * reg1 = (uint32_t*)cpu+(*reg1_offset);
+    uint32_t * imm = (uint32_t*)(cpu->v_eip+2);
+    uint32_t mem_offset = (cpu->v_rfpo);
+    uint32_t * mem_reg_base = (uint32_t*)(cpu->v_eip+3);
+    uint32_t * mem_base = (uint32_t*)cpu+(*mem_reg_base);
+    uint32_t * mem ;
+    if(mem_offset > CHUNK_SIZE){
+        //-
+        uint32_t t = 0-mem_offset;
+        mem = (uint32_t *)(*mem_base - 4*t);
+    }else{
+        //+
+        mem = (uint32_t *)(*mem_base + 4*mem_offset);
+    }
+    *mem = ~(*reg1 | *imm);
+    
+    cpu->v_eip += 4;
+    ;
+}
+void vNorReg4Reg2Mem(vm_cpu * cpu){
+    //mem = ~(reg1 | reg2)
+    uint32_t * reg1_offset = (uint32_t*)(cpu->v_eip+1);
+    uint32_t * reg1 = (uint32_t*)cpu+(*reg1_offset);
+    uint32_t * reg2_offset = (uint32_t*)(cpu->v_eip+2);
+    uint32_t * reg2 = (uint32_t*)cpu+(*reg2_offset);
+    uint32_t mem_offset = (cpu->v_rfpo);
+    uint32_t * mem_reg_base = (uint32_t*)(cpu->v_eip+3);
+    uint32_t * mem_base = (uint32_t*)cpu+(*mem_reg_base);
+    uint32_t * mem ;
+    if(mem_offset > CHUNK_SIZE){
+        //-
+        uint32_t t = 0-mem_offset;
+        mem = (uint32_t *)(*mem_base - 4*t);
+    }else{
+        //+
+        mem = (uint32_t *)(*mem_base + 4*mem_offset);
+    }
+    *mem = ~(*reg1 | *reg2);
+
+    cpu->v_eip += 4;
+    ;
+}
+
+void vSetLessThanImm(vm_cpu * cpu){
+    //SetLessThanImm,reg1,imm,reg2,
+    uint32_t * reg1_offset = (uint32_t*)(cpu->v_eip+1);
+    uint32_t * reg1 = (uint32_t*)cpu+(*reg1_offset);
+    uint32_t * imm = (uint32_t*)(cpu->v_eip+2);
+    uint32_t * reg2_offset = (uint32_t*)(cpu->v_eip+3);
+    uint32_t * reg2 = (uint32_t*)cpu+(*reg2_offset);
+    if(*reg1 < *imm){
+        *reg2 = 1;
+    }else{
+        *reg2 = 0;
+    }
+    cpu->v_eip += 4;
+    ;
+}
+void vSetLessThanReg(vm_cpu * cpu){
+    //SetLessThanReg,reg1,reg2,reg3,
+    uint32_t * reg1_offset = (uint32_t*)(cpu->v_eip+1);
+    uint32_t * reg1 = (uint32_t*)cpu+(*reg1_offset);
+    uint32_t * reg2_offset = (uint32_t*)(cpu->v_eip+2);
+    uint32_t * reg2 = (uint32_t*)cpu+(*reg2_offset);
+    uint32_t * reg3_offset = (uint32_t*)(cpu->v_eip+3);
+    uint32_t * reg3 = (uint32_t*)cpu+(*reg3_offset);
     if(*reg1 < *reg2){
-        //set cf = 1 & zf = 0
-        cpu->v_efl = 0x1;
+         *reg3 = 1;
+    }else{
+         *reg3 = 0;
     }
-
-    cpu->v_eip += 3;
-    
+    cpu->v_eip += 4;
+    ;
 }
 
-//jxx
-void vJmp(vm_cpu *cpu){
-    //vJmp from start offset
-    uint8_t *offset = (uint8_t*)(cpu->v_eip+1);
-    cpu->v_eip = (uint8_t*)(cpu->v_ebp + *offset);
+void vBranchNotEquelZero(vm_cpu * cpu){
+    //BranchNotEquelZero,RAX,Gloable Offset,
+    uint32_t * reg1_offset = (uint32_t*)(cpu->v_eip+1);
+    uint32_t * reg1 = (uint32_t*)cpu+(*reg1_offset);
+    if(*reg1 != 0){
+        uint32_t * eip_offset = (uint32_t*)(cpu->v_eip+2);
+        cpu->v_eip = (uint32_t*)(cpu->v_rbp + 4**eip_offset);
+    }else{
+        cpu->v_eip += 3;
+    }
+    ;
 }
-void vJa(vm_cpu *cpu){
-//vJa offset
-    if(((uint8_t)(cpu->v_efl & 0x40) + ((uint8_t)(cpu->v_efl & 0x1))) == 0x41){
-        vJmp(cpu);
-    }else cpu->v_eip += 2;
-    
+void vBranchNotEquelReg(vm_cpu * cpu){
+    //vBranchNotEquel,reg1,reg2,Gloable Offset,
+    uint32_t * reg1_offset = (uint32_t*)(cpu->v_eip+1);
+    uint32_t * reg1 = (uint32_t*)cpu+(*reg1_offset);
+    uint32_t * reg2_offset = (uint32_t*)(cpu->v_eip+2);
+    uint32_t * reg2 = (uint32_t*)cpu+(*reg2_offset); 
+    if(*reg1 != *reg2){
+        uint32_t * eip_offset = (uint32_t*)(cpu->v_eip+3);
+        cpu->v_eip = (uint32_t*)(cpu->v_rbp + 4**eip_offset);
+    }else{
+        cpu->v_eip += 4;
+    }
+    ;
 }
-void vJb(vm_cpu *cpu){
-//vJb offset
-    if(((uint8_t)(cpu->v_efl & 0x1) == 0x01) && ((uint8_t)(cpu->v_efl & 0x40) == 0x0)){
-        vJmp(cpu);
-    }else cpu->v_eip += 2;
+void vBranchIfEquelZero(vm_cpu * cpu){
+    //BranchIfEquelZero,RAX,Gloable Offset,
+    uint32_t * reg1_offset = (uint32_t*)(cpu->v_eip+1);
+    uint32_t * reg1 = (uint32_t*)cpu+(*reg1_offset);
+    if(*reg1 == 0){
+        uint32_t * eip_offset = (uint32_t*)(cpu->v_eip+2);
+        cpu->v_eip = (uint32_t*)(cpu->v_rbp + 4**eip_offset);
+    }else{
+        cpu->v_eip += 3;
+    }
+    ;
 }
-void vJe(vm_cpu *cpu){
-    //vJe offset
-    if(((uint8_t)(cpu->v_efl & 0x1) == 0x0) && ((uint8_t)(cpu->v_efl & 0x40) == 0x0)){
-        vJmp(cpu);
-    }else cpu->v_eip += 2;
+void vBranchIfEquelReg(vm_cpu * cpu){
+    //vBranchNotEquel,reg1,reg2,Gloable Offset,
+    uint32_t * reg1_offset = (uint32_t*)(cpu->v_eip+1);
+    uint32_t * reg1 = (uint32_t*)cpu+(*reg1_offset);
+    uint32_t * reg2_offset = (uint32_t*)(cpu->v_eip+2);
+    uint32_t * reg2 = (uint32_t*)cpu+(*reg2_offset); 
+    if(*reg1 == *reg2){
+        uint32_t * eip_offset = (uint32_t*)(cpu->v_eip+3);
+        cpu->v_eip = (uint32_t*)(cpu->v_rbp + 4**eip_offset);
+    }else{
+    cpu->v_eip += 4;
+    }
+    ;
 }
 
-void vJz(vm_cpu *cpu){
-    //vJz offset
-    if(((uint8_t)(cpu->v_efl & 0x1) == 0x0) && ((uint8_t)(cpu->v_efl & 0x40) == 0x0)){
-        vJmp(cpu);
-    }else cpu->v_eip += 2;
+void vJmp(vm_cpu * cpu){
+    uint32_t * eip_offset = (uint32_t*)(cpu->v_eip+1);
+    cpu->v_eip = (uint32_t*)(cpu->v_rbp + 4**eip_offset);
+    ;
 }
-
-//
-void vSal(vm_cpu *cpu){
-    //vSal bit  always eax
-    uint8_t * bit = (uint8_t*)(cpu->v_eip+1);//  <= 32  256 ...error handler
-    cpu->v_eax <<= *bit;
-
-    cpu->v_eip += 2;
-}
-void vSar(vm_cpu *cpu){
-    //vSar bit  always eax
-    uint8_t * bit = (uint8_t*)(cpu->v_eip+1);//  <= 32  256 ...error handler
-    cpu->v_eax >>= *bit;
-
-    cpu->v_eip += 2;
+void vNop(vm_cpu * cpu){
+    cpu->v_eip += 1;
+    ;
 }

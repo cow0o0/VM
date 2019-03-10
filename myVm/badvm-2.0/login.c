@@ -71,7 +71,6 @@ int main(void){
     }
     //uint8_t v1 = strncmp(passwd,"123456",6);
 
-
     SHOW_CURSOR();
     if(v0 == 0 && v1 == 0){
         printf("\n---------[WELCOME]---------\n");
