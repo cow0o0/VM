@@ -1072,7 +1072,6 @@ def main():
             print("ERROR: %s" % e)
 
 if __name__ == '__main__':
-
     START = 0xEA0
     END   = 0xF10
     BASE_ADDR = 0x400000
@@ -1085,5 +1084,3 @@ if __name__ == '__main__':
     )
     rand_list = generate_randlist()
     main()
-    
-
