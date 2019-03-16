@@ -22,9 +22,12 @@ int main(int argc, char ** argv){
     HIDE_CURSOR();
     printf("Password:");
     setBufferedInput(false);
+    // scanf("%s",passwd);
     for(uint8_t i = 0;i<6;i++){
+        // memcpy(vm_FrameBase+0x24+i,&passwd[i],1);
         read(0,vm_FrameBase+0x24+i,1);
     }
+    // memcpy(vm_FrameBase+0x24,passwd,6);
     vm_start(cpu);
     uint8_t v0 = strncmp(username,"badrer",6);
     uint32_t v1 = *(vm_FrameBase+0x19);
