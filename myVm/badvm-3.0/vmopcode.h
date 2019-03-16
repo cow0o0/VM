@@ -2,7 +2,7 @@
 #define __H__VMOPCODE
 
 #include<stdint.h>
-#define OPCODE_N 74
+#define OPCODE_N 73
 #define CHUNK_SIZE 0x1000
 
 enum regs {
