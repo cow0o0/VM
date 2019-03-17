@@ -163,63 +163,54 @@ void vMovMem2Reg(vm_cpu * cpu);
 void vMovReg2Reg(vm_cpu * cpu);
 void vMovReg2Mem(vm_cpu * cpu);
 void vMovImm2Mem(vm_cpu * cpu);
-void vMovMem2Mem(vm_cpu * cpu);
 
 void vAddReg4Imm2Reg(vm_cpu * cpu);
 void vAddReg4Reg2Reg(vm_cpu * cpu);
 void vAddReg4Mem2Reg(vm_cpu * cpu);
 void vAddReg4Imm2Mem(vm_cpu * cpu);
 void vAddReg4Reg2Mem(vm_cpu * cpu);
-void vAddReg4Mem2Mem(vm_cpu * cpu);
 
 void vSubReg4Imm2Reg(vm_cpu * cpu);
 void vSubReg4Reg2Reg(vm_cpu * cpu);
 void vSubReg4Mem2Reg(vm_cpu * cpu);
 void vSubReg4Imm2Mem(vm_cpu * cpu);
 void vSubReg4Reg2Mem(vm_cpu * cpu);
-void vSubReg4Mem2Mem(vm_cpu * cpu);
 
 void vMulReg4Imm2Reg(vm_cpu * cpu);
 void vMulReg4Reg2Reg(vm_cpu * cpu);
 void vMulReg4Mem2Reg(vm_cpu * cpu);
 void vMulReg4Imm2Mem(vm_cpu * cpu);
 void vMulReg4Reg2Mem(vm_cpu * cpu);
-void vMulReg4Mem2Mem(vm_cpu * cpu);
 
 void vSraReg4Imm2Reg(vm_cpu * cpu);
 void vSraReg4Reg2Reg(vm_cpu * cpu);
 void vSraReg4Mem2Reg(vm_cpu * cpu);
 void vSraReg4Imm2Mem(vm_cpu * cpu);
 void vSraReg4Reg2Mem(vm_cpu * cpu);
-void vSraReg4Mem2Mem(vm_cpu * cpu);
 
 void vSllReg4Imm2Reg(vm_cpu * cpu);
 void vSllReg4Reg2Reg(vm_cpu * cpu);
 void vSllReg4Mem2Reg(vm_cpu * cpu);
 void vSllReg4Imm2Mem(vm_cpu * cpu);
 void vSllReg4Reg2Mem(vm_cpu * cpu);
-void vSllReg4Mem2Mem(vm_cpu * cpu);
 
 void vXorReg4Imm2Reg(vm_cpu * cpu);
 void vXorReg4Reg2Reg(vm_cpu * cpu);
 void vXorReg4Mem2Reg(vm_cpu * cpu);
 void vXorReg4Imm2Mem(vm_cpu * cpu);
 void vXorReg4Reg2Mem(vm_cpu * cpu);
-void vXorReg4Mem2Mem(vm_cpu * cpu);
 
 void vAndReg4Imm2Reg(vm_cpu * cpu);
 void vAndReg4Reg2Reg(vm_cpu * cpu);
 void vAndReg4Mem2Reg(vm_cpu * cpu);
 void vAndReg4Imm2Mem(vm_cpu * cpu);
 void vAndReg4Reg2Mem(vm_cpu * cpu);
-void vAndReg4Mem2Mem(vm_cpu * cpu);
 
 void vOrReg4Imm2Reg(vm_cpu * cpu);
 void vOrReg4Reg2Reg(vm_cpu * cpu);
 void vOrReg4Mem2Reg(vm_cpu * cpu);
 void vOrReg4Imm2Mem(vm_cpu * cpu);
 void vOrReg4Reg2Mem(vm_cpu * cpu);
-void vOrReg4Mem2Mem(vm_cpu * cpu);
 
 void vNorReg4Imm2Reg(vm_cpu * cpu);
 void vNorReg4Reg2Reg(vm_cpu * cpu);

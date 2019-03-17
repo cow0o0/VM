@@ -1120,12 +1120,12 @@ if __name__ == '__main__':
     START = 0xEA0
     END   = 0xF10
     BASE_ADDR = 0x400000
-    DEBUG = 0
+    DEBUG = 1
     REG_TABLE = {"v0":"RAX","v1":"RBX","v2":"RCX","v3":"RDX","fp":"RFP","zero":"ZERO"}
     fp = open("login","rb").read()
     CODE = fp[START:END]
     all_tests = (
             (CS_ARCH_MIPS, CS_MODE_MIPS32 + CS_MODE_LITTLE_ENDIAN, CODE, "MIPS-32 (Little-endian)"),
     )
-    rand_list = generate_randlist(True)
+    rand_list = generate_randlist(False)
     main()
