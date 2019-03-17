@@ -124,7 +124,7 @@ Ret
 
 可以用来进行`CTF`出题。
 
-![演示](https://github.com/jsk2017/VM/blob/master/myVm/badvm-3.0/show.mp4)
+![演示](https://github.com/jsk2017/VM/blob/master/myVm/badvm-3.0/out.mp4)
 
 >好难解释，相信了解虚拟机保护的师傅，应该很快便能入手，不了解的建议先去看书了解一下，这里可不是新手教程呢。
 
