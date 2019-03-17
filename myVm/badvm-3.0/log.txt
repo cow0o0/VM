@@ -33,188 +33,107 @@ Disasm:
 0x400f0c:	nop	
 [*]---- Finish disassemble ----
 [*]---- Start vmCode ----
-#0x400ea0:	sb	$zero, 0x19($fp)
-	MovImm2Reg,0x19,RFPO,
+	MovImm2Reg,0x19,0x00,0x00,0x00,RFPO,
 	MovReg2Mem,ZERO,RFP,
-#0x400ea4:	sb	$zero, 0x1a($fp)
-	MovImm2Reg,0x1a,RFPO,
+	MovImm2Reg,0x1a,0x00,0x00,0x00,RFPO,
 	MovReg2Mem,ZERO,RFP,
-#0x400ea8:	sb	$zero, 0x1a($fp)
-	MovImm2Reg,0x1a,RFPO,
+	MovImm2Reg,0x1a,0x00,0x00,0x00,RFPO,
 	MovReg2Mem,ZERO,RFP,
-#0x400eac:	b	0x400f00
-	Jmp,111,
-#0x400eb0:	nop	
+	Jmp,0xab,0x00,0x00,0x00,
 	Nop,
-#0x400eb4:	lbu	$v0, 0x1a($fp)
-	MovImm2Reg,0x1a,RFPO,
+	MovImm2Reg,0x1a,0x00,0x00,0x00,RFPO,
 	MovMem2Reg,RFP,RAX,
-#0x400eb8:	addiu	$v1, $fp, 0x30
-	AddReg4Imm2Reg,RFP,0xc0,RBX,
-#0x400ebc:	addu	$v0, $v1, $v0
+	AddReg4Imm2Reg,RFP,0x30,0x00,0x00,0x00,RBX,
 	AddReg4Reg2Reg,RBX,RAX,RAX,
-#0x400ec0:	lb	$v1, -0xc($v0)
-	MovImm2Reg,0xfffffff4,RFPO,
+	MovImm2Reg,0xf4,0xff,0xff,0xff,RFPO,
 	MovMem2Reg,RAX,RBX,
-#0x400ec4:	lbu	$v0, 0x1a($fp)
-	MovImm2Reg,0x1a,RFPO,
+	MovImm2Reg,0x1a,0x00,0x00,0x00,RFPO,
 	MovMem2Reg,RFP,RAX,
-#0x400ec8:	addiu	$v0, $v0, 0x31
-	AddReg4Imm2Reg,RAX,0x31,RAX,
-#0x400ecc:	andi	$v0, $v0, 0xff
-	AndReg4Imm2Reg,RAX,0xff,RAX,
-#0x400ed0:	sll	$v0, $v0, 0x18
-	SllReg4Imm2Reg,RAX,0x18,RAX,
-#0x400ed4:	sra	$v0, $v0, 0x18
-	SraReg4Imm2Reg,RAX,0x18,RAX,
-#0x400ed8:	xor	$v0, $v1, $v0
+	AddReg4Imm2Reg,RAX,0x31,0x00,0x00,0x00,RAX,
+	AndReg4Imm2Reg,RAX,0xff,0x00,0x00,0x00,RAX,
+	SllReg4Imm2Reg,RAX,0x18,0x00,0x00,0x00,RAX,
+	SraReg4Imm2Reg,RAX,0x18,0x00,0x00,0x00,RAX,
 	XorReg4Reg2Reg,RBX,RAX,RAX,
-#0x400edc:	sll	$v0, $v0, 0x18
-	SllReg4Imm2Reg,RAX,0x18,RAX,
-#0x400ee0:	sra	$v0, $v0, 0x18
-	SraReg4Imm2Reg,RAX,0x18,RAX,
-#0x400ee4:	andi	$v1, $v0, 0xff
-	AndReg4Imm2Reg,RAX,0xff,RBX,
-#0x400ee8:	lbu	$v0, 0x19($fp)
-	MovImm2Reg,0x19,RFPO,
+	SllReg4Imm2Reg,RAX,0x18,0x00,0x00,0x00,RAX,
+	SraReg4Imm2Reg,RAX,0x18,0x00,0x00,0x00,RAX,
+	AndReg4Imm2Reg,RAX,0xff,0x00,0x00,0x00,RBX,
+	MovImm2Reg,0x19,0x00,0x00,0x00,RFPO,
 	MovMem2Reg,RFP,RAX,
-#0x400eec:	addu	$v0, $v1, $v0
 	AddReg4Reg2Reg,RBX,RAX,RAX,
-#0x400ef0:	sb	$v0, 0x19($fp)
-	MovImm2Reg,0x19,RFPO,
+	MovImm2Reg,0x19,0x00,0x00,0x00,RFPO,
 	MovReg2Mem,RAX,RFP,
-#0x400ef4:	lbu	$v0, 0x1a($fp)
-	MovImm2Reg,0x1a,RFPO,
+	MovImm2Reg,0x1a,0x00,0x00,0x00,RFPO,
 	MovMem2Reg,RFP,RAX,
-#0x400ef8:	addiu	$v0, $v0, 1
-	AddReg4Imm2Reg,RAX,0x1,RAX,
-#0x400efc:	sb	$v0, 0x1a($fp)
-	MovImm2Reg,0x1a,RFPO,
+	AddReg4Imm2Reg,RAX,0x01,0x00,0x00,0x00,RAX,
+	MovImm2Reg,0x1a,0x00,0x00,0x00,RFPO,
 	MovReg2Mem,RAX,RFP,
-#0x400f00:	lbu	$v0, 0x1a($fp)
-	MovImm2Reg,0x1a,RFPO,
+	MovImm2Reg,0x1a,0x00,0x00,0x00,RFPO,
 	MovMem2Reg,RFP,RAX,
-#0x400f04:	sltiu	$v0, $v0, 6
-	SetLessThanImm,RAX,0x6,RAX,
-#0x400f08:	bnez	$v0, 0x400eb4
-	BranchNotEquelZero,RAX,21,
-#0x400f0c:	nop	
+	SetLessThanImm,RAX,0x06,0x00,0x00,0x00,RAX,
+	BranchNotEquelZero,RAX,0x21,0x00,0x00,0x00,
 	Nop,
 	Ret,
 [*]---- Finish vmCode ----
 [*]---- Start SecCode ----
-#0x400ea0:	sb	$zero, 0x19($fp)
-	#MovImm2Reg,0x19,RFPO,
-		PushImm,0x19,
+		PushImm,0x19,0x00,0x00,0x00,
 		PopReg,RFPO,
-	#MovReg2Mem,ZERO,RFP,
-#0x400ea4:	sb	$zero, 0x1a($fp)
-	#MovImm2Reg,0x1a,RFPO,
-		PushImm,0x1a,
+	MovReg2Mem,ZERO,RFP,
+		PushImm,0x1a,0x00,0x00,0x00,
 		PopReg,RFPO,
-	#MovReg2Mem,ZERO,RFP,
-#0x400ea8:	sb	$zero, 0x1a($fp)
-	#MovImm2Reg,0x1a,RFPO,
-		PushImm,0x1a,
-		PopReg,RFPO,
-	#MovReg2Mem,ZERO,RFP,
-#0x400eac:	b	0x400f00
-	Jmp,139,
-#0x400eb0:	nop	
-	Nop,
-#0x400eb4:	lbu	$v0, 0x1a($fp)
-	#MovImm2Reg,0x1a,RFPO,
-	#MovMem2Reg,RFP,RAX,
-#0x400eb8:	addiu	$v1, $fp, 0x30
-	#AddReg4Imm2Reg,RFP,0xc0,RBX,
-#0x400ebc:	addu	$v0, $v1, $v0
-	#AddReg4Reg2Reg,RBX,RAX,RAX,
-		PushReg,RBX,
-		PushReg,RAX,
+	MovReg2Mem,ZERO,RFP,
+	MovImm2Reg,0x1a,0x00,0x00,0x00,RFPO,
+		PushReg,ZERO,
+		PopMem,RFP,
+		Jmp,0xbf,0x00,0x00,0x00,
+		Nop,
+	MovImm2Reg,0x1a,0x00,0x00,0x00,RFPO,
+	MovMem2Reg,RFP,RAX,
+		PushReg,RFP,
+		PushImm,0x30,0x00,0x00,0x00,
 		AtomAdd,
-		PopReg,RAX,
-#0x400ec0:	lb	$v1, -0xc($v0)
-	#MovImm2Reg,0xfffffff4,RFPO,
-	#MovMem2Reg,RAX,RBX,
+		PopReg,RBX,
+	AddReg4Reg2Reg,RBX,RAX,RAX,
+	MovImm2Reg,0xf4,0xff,0xff,0xff,RFPO,
 		PushMem,RAX,
 		PopReg,RBX,
-#0x400ec4:	lbu	$v0, 0x1a($fp)
-	#MovImm2Reg,0x1a,RFPO,
-	#MovMem2Reg,RFP,RAX,
+		PushImm,0x1a,0x00,0x00,0x00,
+		PopReg,RFPO,
 		PushMem,RFP,
 		PopReg,RAX,
-#0x400ec8:	addiu	$v0, $v0, 0x31
-	#AddReg4Imm2Reg,RAX,0x31,RAX,
-#0x400ecc:	andi	$v0, $v0, 0xff
-	#AndReg4Imm2Reg,RAX,0xff,RAX,
+	AddReg4Imm2Reg,RAX,0x31,0x00,0x00,0x00,RAX,
+	AndReg4Imm2Reg,RAX,0xff,0x00,0x00,0x00,RAX,
+	SllReg4Imm2Reg,RAX,0x18,0x00,0x00,0x00,RAX,
 		PushReg,RAX,
-		PushImm,0xff,
-		AtomAnd,
-		PopReg,RAX,
-#0x400ed0:	sll	$v0, $v0, 0x18
-	#SllReg4Imm2Reg,RAX,0x18,RAX,
-#0x400ed4:	sra	$v0, $v0, 0x18
-	#SraReg4Imm2Reg,RAX,0x18,RAX,
-#0x400ed8:	xor	$v0, $v1, $v0
-	#XorReg4Reg2Reg,RBX,RAX,RAX,
-#0x400edc:	sll	$v0, $v0, 0x18
-	#SllReg4Imm2Reg,RAX,0x18,RAX,
-		PushReg,RAX,
-		PushImm,0x18,
-		AtomSll,
-		PopReg,RAX,
-#0x400ee0:	sra	$v0, $v0, 0x18
-	#SraReg4Imm2Reg,RAX,0x18,RAX,
-		PushReg,RAX,
-		PushImm,0x18,
+		PushImm,0x18,0x00,0x00,0x00,
 		AtomSra,
 		PopReg,RAX,
-#0x400ee4:	andi	$v1, $v0, 0xff
-	#AndReg4Imm2Reg,RAX,0xff,RBX,
+		PushReg,RBX,
 		PushReg,RAX,
-		PushImm,0xff,
-		AtomAnd,
-		PopReg,RBX,
-#0x400ee8:	lbu	$v0, 0x19($fp)
-	#MovImm2Reg,0x19,RFPO,
-		PushImm,0x19,
-		PopReg,RFPO,
-	#MovMem2Reg,RFP,RAX,
-#0x400eec:	addu	$v0, $v1, $v0
-	#AddReg4Reg2Reg,RBX,RAX,RAX,
-#0x400ef0:	sb	$v0, 0x19($fp)
-	#MovImm2Reg,0x19,RFPO,
-	#MovReg2Mem,RAX,RFP,
+		AtomXor,
+		PopReg,RAX,
+	SllReg4Imm2Reg,RAX,0x18,0x00,0x00,0x00,RAX,
+		PushReg,RAX,
+		PushImm,0x18,0x00,0x00,0x00,
+		AtomSra,
+		PopReg,RAX,
+	AndReg4Imm2Reg,RAX,0xff,0x00,0x00,0x00,RBX,
+	MovImm2Reg,0x19,0x00,0x00,0x00,RFPO,
+	MovMem2Reg,RFP,RAX,
+	AddReg4Reg2Reg,RBX,RAX,RAX,
+	MovImm2Reg,0x19,0x00,0x00,0x00,RFPO,
 		PushReg,RAX,
 		PopMem,RFP,
-#0x400ef4:	lbu	$v0, 0x1a($fp)
-	#MovImm2Reg,0x1a,RFPO,
-		PushImm,0x1a,
-		PopReg,RFPO,
-	#MovMem2Reg,RFP,RAX,
-		PushMem,RFP,
-		PopReg,RAX,
-#0x400ef8:	addiu	$v0, $v0, 1
-	#AddReg4Imm2Reg,RAX,0x1,RAX,
-		PushReg,RAX,
-		PushImm,0x1,
-		AtomAdd,
-		PopReg,RAX,
-#0x400efc:	sb	$v0, 0x1a($fp)
-	#MovImm2Reg,0x1a,RFPO,
-	#MovReg2Mem,RAX,RFP,
+	MovImm2Reg,0x1a,0x00,0x00,0x00,RFPO,
+	MovMem2Reg,RFP,RAX,
+	AddReg4Imm2Reg,RAX,0x01,0x00,0x00,0x00,RAX,
+	MovImm2Reg,0x1a,0x00,0x00,0x00,RFPO,
 		PushReg,RAX,
 		PopMem,RFP,
-#0x400f00:	lbu	$v0, 0x1a($fp)
-	#MovImm2Reg,0x1a,RFPO,
-	#MovMem2Reg,RFP,RAX,
-		PushMem,RFP,
-		PopReg,RAX,
-#0x400f04:	sltiu	$v0, $v0, 6
-	SetLessThanImm,RAX,0x6,RAX,
-#0x400f08:	bnez	$v0, 0x400eb4
-	BranchNotEquelZero,RAX,24,
-#0x400f0c:	nop	
-	Nop,
-	Ret,
-[*]---- Finish vmCode ----
+		PushImm,0x1a,0x00,0x00,0x00,
+		PopReg,RFPO,
+	MovMem2Reg,RFP,RAX,
+		SetLessThanImm,RAX,0x06,0x00,0x00,0x00,RAX,
+		BranchNotEquelZero,RAX,0x24,0x00,0x00,0x00,
+		Nop,
+		Ret,
+[*]---- Finish SecCode ----
